@@ -348,10 +348,11 @@ export default {
 
 .pickerContent {
   position: absolute;
-  box-shadow: 2px 6px 8px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.8);
   width: 230px;
   height: 350px;
+  border-radius: 0.2rem;
   text-align: right;
   left: 0;
   display: inline-block;

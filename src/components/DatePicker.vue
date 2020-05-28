@@ -1,42 +1,46 @@
 <template>
-  <div :class="$style.agenda">
+  <div :class="$style.wrapper">
     <div
       :class="$style.triangle"
       :style="{
         borderColor: `transparent transparent ${colors.hex} transparent`,
       }"
     />
-    <div :class="$style.header" :style="{ background: colors.hex }">
-      <span :class="$style.year">{{ selectedDate.format('YYYY') }}</span>
-      <span :class="$style.date">{{ selectedDate.format('dddd DD MMM') }}</span>
-    </div>
-    <div :class="$style.days">
-      <div :class="$style.controls">
-        <Next :class="$style.arrows" @click="prevMonth()" />
-        <label>{{ month.getFormatted() }}</label>
-        <Previous :class="$style.arrows" @click="nextMonth()" />
+    <div :class="$style.agenda">
+      <div :class="$style.header" :style="{ background: colors.hex }">
+        <span :class="$style.year">{{ selectedDate.format('YYYY') }}</span>
+        <span :class="$style.date">
+          {{ selectedDate.format('dddd DD MMM') }}
+        </span>
       </div>
-      <div v-for="(day, index) in days" :key="index" :class="$style.weekdays">
-        {{ day }}
-      </div>
-      <div :class="$style.daysWrapper">
-        <div
-          :class="$style.spacer"
-          :style="{ width: month.getWeekStart() * 52 + 'px' }"
-        />
-        <div
-          v-for="(day, index) in month.getDays()"
-          :key="`day${index}`"
-          :class="[$style.day, { [$style.selected]: isSelected(day) }]"
-          @click="selectDate(day)"
-        >
-          <span
-            :class="$style.overlay"
-            :style="{ background: colors.hex }"
-          ></span>
-          <span v-if="dayHasTodos(day)" :class="$style.taskedOverlay" />
-          <span v-if="isToday(day)" :class="$style.todayOverlay" />
-          <span :class="$style.text">{{ day.format('D') }}</span>
+      <div :class="$style.days">
+        <div :class="$style.controls">
+          <Next :class="$style.arrows" @click="prevMonth()" />
+          <label>{{ month.getFormatted() }}</label>
+          <Previous :class="$style.arrows" @click="nextMonth()" />
+        </div>
+        <div v-for="(day, index) in days" :key="index" :class="$style.weekdays">
+          {{ day }}
+        </div>
+        <div :class="$style.daysWrapper">
+          <div
+            :class="$style.spacer"
+            :style="{ width: month.getWeekStart() * 52 + 'px' }"
+          />
+          <div
+            v-for="(day, index) in month.getDays()"
+            :key="`day${index}`"
+            :class="[$style.day, { [$style.selected]: isSelected(day) }]"
+            @click="selectDate(day)"
+          >
+            <span
+              :class="$style.overlay"
+              :style="{ background: colors.hex }"
+            ></span>
+            <span v-if="dayHasTodos(day)" :class="$style.taskedOverlay" />
+            <span v-if="isToday(day)" :class="$style.todayOverlay" />
+            <span :class="$style.text">{{ day.format('D') }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -127,19 +131,24 @@ export default {
   flex-wrap: wrap;
 }
 
-.agenda {
-  background: rgba(white, 0.8);
+.wrapper {
   position: absolute;
-  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
-  top: 130px;
-  width: 392px;
   left: 0;
+  top: 130px;
   right: 0;
+  width: 392px;
   margin: auto;
   z-index: 2;
 }
 
-.agenda .triangle {
+.agenda {
+  overflow: hidden;
+  background: rgba(white, 0.8);
+  border-radius: 0.2rem;
+  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
+}
+
+.triangle {
   content: '';
   position: absolute;
   top: -17px;
@@ -152,17 +161,17 @@ export default {
   border-width: 0 17.5px 17px 17.5px;
 }
 
-.agenda .header {
+.header {
   color: white;
   padding: 1.5em;
 }
 
-.agenda .header .year {
+.year {
   display: block;
   opacity: 0.7;
 }
 
-.agenda .header .date {
+.date {
   font-size: 1.5em;
 }
 
@@ -178,6 +187,7 @@ export default {
   height: 70px;
   justify-content: center;
   line-height: 56px;
+  cursor: pointer;
 }
 
 .arrows {

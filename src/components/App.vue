@@ -12,13 +12,30 @@
       @createTodo="createTodo"
     />
     <div :class="$style.tasks">
-      <div
-        v-if="filteredTodos.length !== 0"
-        :class="[$style.allCompletedWrapper, { [$style.isSelected]: allDone }]"
-        @click="setAllCompleted"
-      >
-        <AllCompletedIcon :class="$style.allCompletedIcon" />
-        <span :class="$style.allCompletedText">Toggle all completed</span>
+      <div :class="$style.taskHeader">
+        <div
+          v-if="filteredTodos.length !== 0"
+          :class="[
+            $style.allCompletedWrapper,
+            { [$style.isSelected]: allDone },
+          ]"
+          @click="setAllCompleted"
+        >
+          <AllCompletedIcon :class="$style.allCompletedIcon" />
+          <span :class="$style.allCompletedText">Toggle all completed</span>
+        </div>
+        <div
+          v-if="isToday"
+          :class="$style.transferRemainingWrapper"
+          @click="transferRemainingTasks"
+        >
+          <div :class="$style.transferTodayIconWrapper">
+            <TransferTodayIcon :class="$style.transferTodayIcon" />
+          </div>
+          <span :class="$style.allCompletedText">
+            Transfer remaining tasks
+          </span>
+        </div>
       </div>
       <h2 v-if="filteredTodos.length === 0">
         There's no task
@@ -116,9 +133,10 @@ import * as database from '@core/db/methods'
 import moment from 'moment'
 import Header from './Header'
 import Filters from './Filters'
-import RunningTask from '../assets/runningTask.svg'
-import CompletedTask from '../assets/completedTask.svg'
-import AllCompletedIcon from '../assets/allcompleted.svg'
+import RunningTask from '@assets/runningTask.svg'
+import CompletedTask from '@assets/completedTask.svg'
+import AllCompletedIcon from '@assets/allcompleted.svg'
+import TransferTodayIcon from '@assets/transferToday.svg'
 import ua from 'universal-analytics'
 import CrossIcon from '@assets/cross.svg'
 
@@ -136,6 +154,7 @@ export default {
     RunningTask,
     CompletedTask,
     AllCompletedIcon,
+    TransferTodayIcon,
     CrossIcon,
   },
   directives: {
@@ -185,7 +204,12 @@ export default {
     getFormat() {
       const selectedDate = this.filter !== 'all' && this.selectedDate
 
-      return selectedDate ? 'h:mm:ss a' : 'YYYY-MM-DD'
+      return selectedDate ? 'h:mm:ss a' : 'YYYY-MM-DDf'
+    },
+    isToday() {
+      return (
+        this.selectedDate.format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')
+      )
     },
     moment() {
       return moment
@@ -263,6 +287,18 @@ export default {
     this.user.event('user', 'connect').send()
   },
   methods: {
+    transferRemainingTasks() {
+      this.todos = this.todos.map(todo => {
+        if (todo.completed) {
+          return todo
+        }
+
+        return {
+          ...todo,
+          date: moment(),
+        }
+      })
+    },
     getTagColor(tagId) {
       const tags = this.tags.find(({ id }) => id === tagId)
 
@@ -428,6 +464,13 @@ section {
   z-index: 1;
 }
 
+.transferRemainingWrapper {
+  display: flex;
+  padding: 1.5rem;
+  align-items: center;
+  cursor: pointer;
+}
+
 .allCompletedWrapper {
   display: flex;
   cursor: pointer;
@@ -572,5 +615,27 @@ ul {
 
 .transitionEnter {
   transform: translateX(-400px);
+}
+
+.taskHeader {
+  display: flex;
+}
+
+.transferTodayIconWrapper {
+  border: 1px solid #efefef;
+  border-radius: 50%;
+  position: relative;
+  height: 40px;
+  width: 40px;
+}
+
+.transferTodayIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 18px;
+  width: 18px;
+  fill: #5dc2b1;
 }
 </style>
