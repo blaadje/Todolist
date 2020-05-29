@@ -25,7 +25,7 @@
           <span :class="$style.allCompletedText">Toggle all completed</span>
         </div>
         <div
-          v-if="isToday"
+          v-if="isToday && hasRemainingTask"
           :class="$style.transferRemainingWrapper"
           @click="transferRemainingTasks"
         >
@@ -214,6 +214,15 @@ export default {
     moment() {
       return moment
     },
+    hasRemainingTask() {
+      return (
+        this.todos.filter(
+          todo =>
+            moment(todo.date).format('YYYY-MM-DD') !==
+              moment().format('YYYY-MM-DD') && !todo.completed,
+        ).length >= 1
+      )
+    },
     remaining() {
       return this.filteredTodos.filter(todo => !todo.completed).length
     },
@@ -273,9 +282,12 @@ export default {
       this.updates.downloaded = true
     })
   },
-  mounted() {
-    this.todos = database.getTodos()
-    const userId = database.getUserId()
+  async mounted() {
+    const [todos, userId] = await Promise.all([
+      database.getTodos(),
+      database.getUserId(),
+    ])
+    this.todos = todos
 
     if (!userId) {
       const generateId = this.generateId()
@@ -298,6 +310,8 @@ export default {
           date: moment(),
         }
       })
+
+      database.setRemainingTasksToday()
     },
     getTagColor(tagId) {
       const tags = this.tags.find(({ id }) => id === tagId)

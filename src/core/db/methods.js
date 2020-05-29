@@ -11,6 +11,15 @@ const getUserId = () => db.getState().userId
 
 const setUserId = userId => db.set('userId', userId).write()
 
+const setRemainingTasksToday = () =>
+  db
+    .get('todos')
+    .filter(({ completed }) => !completed)
+    .each(todo => {
+      todo.date = moment()
+    })
+    .write()
+
 const setTodoCompleted = id => {
   const todo = db
     .get('todos')
@@ -87,4 +96,5 @@ export {
   deleteTodos,
   toggleAllCompleted,
   deleteCompleted,
+  setRemainingTasksToday,
 }
