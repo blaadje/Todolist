@@ -38,6 +38,7 @@ jobs:
       - name: Electron Builder Action
         uses: samuelmeuli/action-electron-builder@v1.2.0
         with:
+          args: '--pd'
           github_token: ${{ secrets.github_token }}
 
       - uses: shallwefootball/s3-upload-action@master
