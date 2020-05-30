@@ -15,26 +15,12 @@
       </span>
       <div :class="$style.filtersWrapper">
         <div :class="$style.filters">
-          <div :class="$style.tagsWrapper">
-            <span
-              :class="[
-                $style.tag,
-                $style.hasNoTag,
-                { [$style.selected]: selectedTags.lenght > 0 },
-              ]"
-              @click="$emit('filterByTag')"
-            />
-            <span
-              v-for="tag in tags"
-              :key="tag.id"
-              :class="[
-                $style.tag,
-                { [$style.selected]: selectedTags.includes(tag.id) },
-              ]"
-              @click="$emit('filterByTag', tag.id)"
-              :style="{ background: tag.color }"
-            />
-          </div>
+          <TagList
+            :class="$style.tagsWrapper"
+            :tags="tags"
+            :selectedTags="selectedTags"
+            @selectedTag="tagId => $emit('filterByTag', tagId)"
+          />
           <div :class="$style.filterWrapper">
             <label :class="[$style.dateLabel, $style.statusTitle]">Date:</label>
             <button
@@ -84,10 +70,12 @@
 
 <script>
 import LeftArrowIcon from '../assets/leftArrow.svg'
+import TagList from './TagList'
 
 export default {
   components: {
     LeftArrowIcon,
+    TagList,
   },
   props: {
     tags: {
@@ -97,10 +85,6 @@ export default {
     selectedTags: {
       type: Array,
       default: null,
-    },
-    todos: {
-      type: Array,
-      required: true,
     },
     colors: {
       type: Object,
@@ -265,10 +249,6 @@ $visibilityIcon: 20px;
 
 .dateLabel {
   margin-right: 0.6rem;
-}
-
-.selected {
-  transform: scale(1.3);
 }
 
 .filterButton {

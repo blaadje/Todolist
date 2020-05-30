@@ -37,7 +37,7 @@
               :class="$style.overlay"
               :style="{ background: colors.hex }"
             ></span>
-            <span v-if="dayHasTodos(day)" :class="$style.taskedOverlay" />
+            <span v-if="dayHasTask(day)" :class="$style.taskedOverlay" />
             <span v-if="isToday(day)" :class="$style.todayOverlay" />
             <span :class="$style.text">{{ day.format('D') }}</span>
           </div>
@@ -80,7 +80,7 @@ export default {
     }
   },
   methods: {
-    dayHasTodos(day) {
+    dayHasTask(day) {
       return this.taskedDays.some(item => item === day.format('YYYY-MM-DD'))
     },
     isToday(day) {
@@ -127,6 +127,8 @@ export default {
 
 <style lang="scss" module>
 .daysWrapper {
+  z-index: 20;
+  position: relative;
   display: inline-flex;
   flex-wrap: wrap;
 }
