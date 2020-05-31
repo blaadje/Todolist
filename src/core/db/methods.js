@@ -14,7 +14,10 @@ const setUserId = userId => db.set('userId', userId).write()
 const setRemainingTasksToday = () =>
   db
     .get('todos')
-    .filter(({ completed }) => !completed)
+    .filter(
+      ({ completed, date }) =>
+        moment(date).unix() < moment().unix() && !completed,
+    )
     .each(task => {
       task.date = moment()
     })

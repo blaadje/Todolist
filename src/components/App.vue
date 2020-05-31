@@ -125,7 +125,7 @@ export default {
   computed: {
     isInputAvailable() {
       return (
-        this.selectedDate.format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')
+        this.selectedDate.format('YYYY-MM-DD') >= moment().format('YYYY-MM-DD')
       )
     },
     hasTask() {
@@ -146,7 +146,7 @@ export default {
       return (
         this.tasks.filter(
           task =>
-            moment(task.date).format('YYYY-MM-DD') !==
+            moment(task.date).format('YYYY-MM-DD') <
               moment().format('YYYY-MM-DD') && !task.completed,
         ).length >= 1
       )
@@ -229,7 +229,7 @@ export default {
   methods: {
     transferRemainingTasks() {
       this.tasks = this.tasks.map(task => {
-        if (task.completed) {
+        if (moment(task.date).unix() >= moment().unix() || task.completed) {
           return task
         }
 
@@ -325,7 +325,7 @@ export default {
     },
     createTask(newTask, tagId) {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
-      const date = moment()
+      const date = this.selectedDate
 
       const task = {
         name: newTask,
