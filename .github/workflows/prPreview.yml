@@ -2,8 +2,8 @@ name: Deploy for preview
 
 on: 
   pull_request:
-    branches-ignore:
-      - 'master'
+    branches: [master]
+    types: [synchronize]
 
 jobs:
   preview:
