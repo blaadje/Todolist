@@ -38,7 +38,6 @@ jobs:
       - name: Electron Builder Action
         uses: samuelmeuli/action-electron-builder@v1.2.0
         with:
-          args: '--pd'
           github_token: ${{ secrets.github_token }}
 
       - name: Deploy S3 Website
@@ -49,7 +48,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.github_token }}
 
       - name: Update deployment status (success)
         if: success()
