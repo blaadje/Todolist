@@ -30,7 +30,7 @@ jobs:
           github_token: ${{ secrets.github_token }}
 
       - name: Deploy S3 Website
-        uses: blaadje/s3-website-pr-action@8ef1c34
+        uses: blaadje/s3-website-pr-action@asuyefhsueyfh
         with:
           bucket-prefix: "blaadje-todo-list-app"
           folder-to-copy: "build"
