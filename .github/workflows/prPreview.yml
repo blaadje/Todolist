@@ -12,11 +12,13 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         node-version: [12.x]
 
-    steps:
-      - uses: github-actions-up-and-running/pr-comment@v1.0.0
+    steps: 
+      - uses: mshick/add-pr-comment@v1
         with:
+          message: |
+            🚀 Pull-request application deployment starting.
           repo-token: ${{ secrets.github_token }}
-          message: 🚀 Pull-request application deployment starting.
+          repo-token-user-login: 'github-actions[bot]'
       - name: checkout
         uses: actions/checkout@v2
 
