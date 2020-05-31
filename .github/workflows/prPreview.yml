@@ -1,7 +1,7 @@
 name: Deploy for preview
 
 on: 
-  push:
+  pull_request:
     branches-ignore:
       - 'master'
 
