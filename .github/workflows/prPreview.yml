@@ -30,12 +30,23 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
 
-      - name: Deploy S3 Website
-        uses: blaadje/s3-website-pr-action@patch-1
-        with:
-          bucket-prefix: "blaadje-todo-list-app"
-          folder-to-copy: "build"
+      - name: Static site deploy to s3 and comment on PR
+        uses: razzkumar/pr-automation-with-s3@v1.0.0
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          GITHUB_TOKEN: ${{ secrets.github_token }}
+          GH_ACCESS_TOKEN: ${{ secrets.github_token}}
+          AWS_REGION: 'us-east-2'     # optional: defaults to us-east-2
+          SRC_FOLDER: 'build'         # optional: defaults to build (react app)
+          IS_BUILD: 'true'            # optional: defaults to true
+          ACTION: "create"            # optional: defaults to create (option:create,delete and deploy)
+          BUILD_COMMAND: "yarn build" # optional: defaults to `yarn build`
+#       - name: Deploy S3 Website
+#         uses: blaadje/s3-website-pr-action@patch-1
+#         with:
+#           bucket-prefix: "blaadje-todo-list-app"
+#           folder-to-copy: "build"
+#         env:
+#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           GITHUB_TOKEN: ${{ secrets.github_token }}
