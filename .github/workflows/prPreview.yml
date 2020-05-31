@@ -7,7 +7,6 @@ on:
 
 jobs:
   preview:
-
     runs-on: ${{ matrix.os }}
 
     strategy:
