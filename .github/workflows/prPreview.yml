@@ -5,6 +5,16 @@ on:
     branches: [master]
 
 jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            🚀 Pull-request application deployment starting.
+          repo-token: ${{ secrets.github_token }}
+          allow-repeats: true
+          repo-token-user-login: 'github-actions[bot]'
   preview:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -13,13 +23,6 @@ jobs:
         node-version: [12.x]
 
     steps: 
-      - uses: mshick/add-pr-comment@v1
-        with:
-          message: |
-            🚀 Pull-request application deployment starting.
-          repo-token: ${{ secrets.github_token }}
-          allow-repeats: true
-          repo-token-user-login: 'github-actions[bot]'
       - name: checkout
         uses: actions/checkout@v2
 
