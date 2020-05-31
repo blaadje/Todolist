@@ -1,8 +1,10 @@
 name: Deploy for preview
 
-on: 
+on:
   pull_request:
     branches: [master]
+  issue_comment:
+    types: [created]
 
 jobs:
   preview:
@@ -13,23 +15,35 @@ jobs:
         node-version: [12.x]
 
     steps:
+      - uses: khan/pull-request-comment-trigger@master
+        id: check
+        with:
+          trigger: '@deploy'
+          reaction: rocket
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: checkout
+        if: steps.check.outputs.triggered == 'true'
         uses: actions/checkout@v2
 
       - name: Use Node.js ${{ matrix.node-version }}
+        if: steps.check.outputs.triggered == 'true'
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
+        if: steps.check.outputs.triggered == 'true'
         run: yarn install
 
       - name: Electron Builder Action
+        if: steps.check.outputs.triggered == 'true'
         uses: samuelmeuli/action-electron-builder@v1.2.0
         with:
           github_token: ${{ secrets.github_token }}
 
       - name: Deploy S3 Website
+        if: steps.check.outputs.triggered == 'true'
         uses: blaadje/foo@master
         with:
           bucket-prefix: "blaadje-todo-list-app"
