@@ -21,7 +21,7 @@ jobs:
           trigger: '@deploy'
           reaction: rocket
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: '${{ secrets.github_token }}'
       - name: checkout
         if: steps.check.outputs.triggered == 'true'
         uses: actions/checkout@v2
