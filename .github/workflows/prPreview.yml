@@ -2,7 +2,7 @@ name: Deploy for preview
 
 on:
   issue_comment:
-    types: [created]
+    types: [created, edited]
 
 jobs:
   preview:
