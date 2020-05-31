@@ -31,7 +31,6 @@ jobs:
         run: yarn install
 
       - name: Electron Builder Action
-        if: steps.check.outputs.triggered == 'true'
         uses: samuelmeuli/action-electron-builder@v1.2.0
         with:
           github_token: ${{ secrets.github_token }}
