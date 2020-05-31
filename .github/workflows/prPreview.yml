@@ -18,6 +18,7 @@ jobs:
           message: |
             🚀 Pull-request application deployment starting.
           repo-token: ${{ secrets.github_token }}
+          allow-repeats: true
           repo-token-user-login: 'github-actions[bot]'
       - name: checkout
         uses: actions/checkout@v2
@@ -36,7 +37,7 @@ jobs:
           github_token: ${{ secrets.github_token }}
 
       - name: Deploy S3 Website
-        uses: blaadje/foo@master
+        uses: blaadje/s3-website-pr-action@master
         with:
           bucket-prefix: "blaadje-todo-list-app"
           folder-to-copy: "build"
