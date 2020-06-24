@@ -1,5 +1,6 @@
 <template>
   <div
+    v-on="$listeners"
     :class="[
       $style.task,
       {
@@ -115,22 +116,15 @@ export default {
 .task {
   position: relative;
   margin: 0;
-  padding: 1em 3rem;
-  list-style-type: none;
-
+  padding-left: 1.2rem;
+  padding-right: 3rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   &:hover {
     .destroy {
       fill: #ededed;
     }
   }
-}
-
-.task:not(:last-child) {
-  border-bottom: 1px solid #ededed;
-}
-
-.task:first-child {
-  padding-top: 0;
 }
 
 .editingTextInput {
@@ -207,5 +201,9 @@ export default {
 
 .editingText .view {
   display: none;
+}
+
+.dragButton {
+  cursor: grab;
 }
 </style>
