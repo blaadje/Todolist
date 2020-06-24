@@ -26,45 +26,24 @@
     <h2 v-if="!hasTask">
       There's no task
     </h2>
-    <Draggable
-      :dragClass="$style.drag"
-      :ghostClass="$style.ghost"
-      :chosenClass="$style.chosen"
-      :sort="false"
-      handle=".handle"
+    <DraggableList
+      :list="filteredByStatusTasks"
+      :selectedDateView="Boolean(selectedDateView)"
+      @orderedTasks="handleOrderedTasks"
     >
-      <TransitionGroup
-        :appear="false"
-        :enter-class="$style.transitionEnter"
-        :enter-active-class="$style.transitionEnterActive"
-      >
-        <div
-          v-for="(task, index) in filteredByStatusTasks"
-          :key="index"
-          ref="draggingItem"
-          :class="$style.taskWrapper"
-          @drop="event => drop(event, index)"
-          @dragstart="dragStart(index)"
-          @dragend="dragEnd(index)"
-          @dragover="event => dragOver(event, index)"
-        >
-          <DragIcon
-            v-if="selectedDateView"
-            class="handle"
-            :class="$style.dragIcon"
-          />
-          <Task
-            :class="$style.task"
-            :task="task"
-            :tags="tags"
-            :taskDateFormat="getFormat"
-            @setTaskCompleted="toggleTaskCompleted"
-            @deleteTask="deleteTask"
-            @editTask="editTask"
-          />
-        </div>
-      </TransitionGroup>
-    </Draggable>
+      <template #default="{ task }">
+        <Task
+          :class="$style.task"
+          :task="task"
+          :tags="tags"
+          :taskDateFormat="getFormat"
+          @setTaskCompleted="toggleTaskCompleted"
+          @deleteTask="deleteTask"
+          @editTask="editTask"
+        />
+      </template>
+    </DraggableList>
+
     <Filters
       :remaining="remaining"
       :colors="colors"
@@ -84,7 +63,6 @@
 
 <script>
 import { ipcRenderer } from 'electron'
-import Draggable from 'vuedraggable'
 
 import * as database from '@core/db/methods'
 import moment from 'moment'
@@ -94,7 +72,7 @@ import TaskHeader from './TaskHeader'
 import Task from './Task'
 import UpdatesPanel from './UpdatesPanel'
 import TaskGenerator from './TaskGenerator'
-import DragIcon from '@assets/drag.svg'
+import DraggableList from './DraggableList'
 
 import ua from 'universal-analytics'
 
@@ -113,13 +91,10 @@ export default {
     TaskGenerator,
     Task,
     UpdatesPanel,
-    Draggable,
-    DragIcon,
+    DraggableList,
   },
   data() {
     return {
-      draggingOverElementIndex: null,
-      draggingStartElementIndex: null,
       user: null,
       updates: {
         available: false,
@@ -270,36 +245,8 @@ export default {
     this.user.event('user', 'connect').send()
   },
   methods: {
-    drop({ y }, index) {
-      if (this.draggingStartElementIndex === index) {
-        return
-      }
-
-      const isDirectionUp = this.isDirectionUp(
-        this.$refs.draggingItem[index],
-        y,
-      )
-      const oldTaskIndex = this.filteredByStatusTasks[
-        this.draggingStartElementIndex
-      ].orderIndex
-      const newTaskIndex = this.filteredByStatusTasks[index].orderIndex
-      const newTaskIndexFromDirection = isDirectionUp
-        ? newTaskIndex + 1
-        : newTaskIndex
-
-      const newIndexPosition = this.filteredByStatusTasks.findIndex(
-        ({ orderIndex }) => orderIndex === newTaskIndex,
-      )
-
-      const orderedDailyTasks = this.orderTasks(
-        this.filteredByStatusTasks,
-        oldTaskIndex,
-        newTaskIndexFromDirection,
-        newIndexPosition,
-        isDirectionUp,
-      )
-
-      const otherDaysTasks = this.tasks
+    handleOrderedTasks(orderedTasks) {
+      const otherDaysTasks = this.filteredByStatusTasks
         .sort((a, b) => b.orderIndex - a.orderIndex)
         .filter(
           task =>
@@ -307,67 +254,7 @@ export default {
             this.selectedDate.format('YYYY-MM-DD'),
         )
 
-      this.tasks = [...otherDaysTasks, ...orderedDailyTasks]
-    },
-    orderTasks(tasks, oldIndex, newIndex, newIndexPosition, isDirectionUp) {
-      return tasks.map((task, index) => {
-        const position = isDirectionUp ? newIndexPosition - 1 : newIndexPosition
-        if (task.orderIndex === oldIndex) {
-          return {
-            ...task,
-            orderIndex: newIndex,
-          }
-        }
-
-        return index <= position
-          ? {
-              ...task,
-              orderIndex: newIndex + 1 + position - index,
-            }
-          : {
-              ...task,
-              orderIndex: newIndex + position - index,
-            }
-      })
-    },
-    isDirectionUp(hoveringElement, y) {
-      const { top, bottom } = hoveringElement.getBoundingClientRect()
-      const middleHeight = hoveringElement.offsetHeight / 2
-      const middlePosition = bottom - middleHeight
-
-      return y < middlePosition
-    },
-    dragStart(index) {
-      this.draggingStartElementIndex = index
-    },
-    dragEnd(index) {
-      this.$refs.draggingItem.forEach(
-        element => (element.style.boxShadow = 'none'),
-      )
-      this.draggingStartElementIndex = null
-    },
-    dragOver({ y }, index) {
-      const hoveringElement = this.$refs.draggingItem[index]
-      const color = '#62bafe'
-
-      if (this.draggingOverElementIndex) {
-        const previousElement = this.$refs.draggingItem[
-          this.draggingOverElementIndex
-        ]
-
-        previousElement.style.boxShadow = 'none'
-      }
-
-      this.draggingOverElementIndex = index
-
-      if (this.draggingStartElementIndex === index) {
-        hoveringElement.style.boxShadow = 'none'
-        return
-      }
-
-      hoveringElement.style.boxShadow = `${
-        this.isDirectionUp(hoveringElement, y) ? 'inset' : ''
-      } 0px 2px 1px 0px ${color}`
+      this.tasks = [...otherDaysTasks, ...orderedTasks]
     },
     transferRemainingTasks() {
       this.tasks = this.tasks.map(task => {
@@ -468,7 +355,8 @@ export default {
     createTask(newTask, tagId) {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
       const date = this.selectedDate
-      const higherTaskIndex = this.tasks[0].orderIndex
+      const higherTaskIndex =
+        (this.tasks.length && this.tasks[0].orderIndex) || 0
 
       const task = {
         name: newTask,
@@ -573,64 +461,7 @@ ul {
   transform: translateY(0);
 }
 
-.transitionEnterActive {
-  transition: transform 0.5s cubic-bezier(0, 0.54, 0.5, 1);
-  transform: translateX(0);
-}
-
-.transitionEnter {
-  transform: translateX(-400px);
-}
-
-.ghost {
-  background: red;
-  position: relative;
-}
-
-.ghost::after {
-  background-image: repeating-linear-gradient(
-    45deg,
-    #f4f5f7,
-    #f4f5f7 10px,
-    #f0f1f4 10px,
-    #f0f1f4 20px
-  );
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-.drag {
-  background: white;
-  border-radius: 0.4rem;
-}
-
-.taskWrapper {
-  display: flex;
-  align-items: center;
-}
-
-.taskWrapper:not(:last-child) {
-  border-bottom: 1px solid #ededed;
-}
-
 .task {
   flex: 1;
-}
-
-.dragIcon {
-  cursor: grab;
-  margin-left: 2.4rem;
-  width: 12px;
-  height: 12px;
-  fill: #ababab;
-}
-
-.ghost,
-.chosen {
-  cursor: grabbing;
 }
 </style>

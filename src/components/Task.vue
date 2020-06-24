@@ -116,7 +116,7 @@ export default {
 .task {
   position: relative;
   margin: 0;
-  padding-left: 1.2rem;
+  padding-left: 1rem;
   padding-right: 3rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
