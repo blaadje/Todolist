@@ -246,15 +246,7 @@ export default {
   },
   methods: {
     handleOrderedTasks(orderedTasks) {
-      const otherDaysTasks = this.filteredByStatusTasks
-        .sort((a, b) => b.orderIndex - a.orderIndex)
-        .filter(
-          task =>
-            moment(task.date).format('YYYY-MM-DD') !==
-            this.selectedDate.format('YYYY-MM-DD'),
-        )
-
-      this.tasks = [...otherDaysTasks, ...orderedTasks]
+      this.editTasks(orderedTasks)
     },
     transferRemainingTasks() {
       this.tasks = this.tasks.map(task => {
@@ -374,10 +366,6 @@ export default {
       this.tasks = this.tasks.filter(({ id }) => id !== taskId)
       database.deleteTask(taskId)
     },
-    editTodo(task) {
-      this.user.event(CATEGORY_TASK, ACTION_EDIT).send()
-      this.editing = task
-    },
     toggleTaskCompleted(taskId) {
       this.tasks = this.tasks.map(task => {
         if (task.id !== taskId) {
@@ -391,19 +379,21 @@ export default {
       })
       database.toggleTaskCompleted(taskId)
     },
-    editTask(taskId, taskName) {
+    editTask(editedTask) {
+      this.tasks = this.tasks.map(task =>
+        task.id === editedTask.id ? editedTask : task,
+      )
+      this.user.event(CATEGORY_TASK, ACTION_EDIT).send()
+      database.editTask(editedTask)
+    },
+    editTasks(editedTasks) {
       this.tasks = this.tasks.map(task => {
-        if (task.id !== taskId) {
-          return task
-        }
+        const editedTask = editedTasks.find(({ id }) => id === task.id) || false
 
-        return {
-          ...task,
-          name: taskName,
-        }
+        return editedTask ? editedTask : task
       })
       this.user.event(CATEGORY_TASK, ACTION_EDIT).send()
-      database.editTask(taskId, taskName)
+      database.editTasks(editedTasks)
     },
   },
 }

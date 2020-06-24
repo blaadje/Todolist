@@ -86,7 +86,8 @@ export default {
 .allCompletedWrapper {
   display: flex;
   cursor: pointer;
-  padding: 1.5rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
   padding-left: 25px;
   align-items: center;
 

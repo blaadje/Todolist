@@ -8,7 +8,7 @@
       },
     ]"
   >
-    <div :class="$style.view">
+    <div :class="$style.view" v-if="editingText === null">
       <input
         :id="`toggle-${task.id}`"
         type="checkbox"
@@ -20,11 +20,7 @@
         <CompletedTaskIcon v-if="task.completed" />
         <RunningTaskIcon v-else />
       </label>
-      <div
-        :class="$style.textWrapper"
-        v-if="!editingText"
-        @dblclick="editingTaskName"
-      >
+      <div :class="$style.textWrapper" @dblclick="editingTaskName">
         <span :class="$style.date">
           {{ moment(task.date).format(taskDateFormat) }}
         </span>
@@ -39,7 +35,7 @@
       />
     </div>
     <input
-      v-if="editingText"
+      v-if="editingText !== null"
       v-model="editingText"
       v-focus="editingText"
       :class="$style.editingTextInput"
@@ -102,7 +98,16 @@ export default {
   },
   methods: {
     handleEditTask() {
-      this.$emit('editTask', this.task.id, this.editingText)
+      if (!this.editingText) {
+        return
+      }
+
+      const task = {
+        ...this.task,
+        name: this.editingText,
+      }
+
+      this.$emit('editTask', task)
       this.editingText = null
     },
     editingTaskName() {
@@ -201,9 +206,5 @@ export default {
 
 .editingText .view {
   display: none;
-}
-
-.dragButton {
-  cursor: grab;
 }
 </style>

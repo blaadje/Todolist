@@ -48,15 +48,22 @@ const deleteTask = taskId =>
     .remove({ id: taskId })
     .write()
 
-const editTask = (id, newName) => {
-  const task = db
-    .get('todos')
-    .find({ id })
-    .value()
-
+const editTask = editedTask => {
   db.get('todos')
-    .find({ id })
-    .assign({ ...task, name: newName })
+    .find({ id: editedTask.id })
+    .assign(editedTask)
+    .write()
+}
+
+const editTasks = editedTasks => {
+  db.get('todos')
+    .each(task => {
+      const editedTask = editedTasks.find(({ id }) => id === task.id) || false
+
+      Object.keys(task).forEach(key => {
+        task[key] = editedTask ? editedTask[key] : task[key]
+      })
+    })
     .write()
 }
 
@@ -89,6 +96,7 @@ export {
   getTasks,
   addTask,
   editTask,
+  editTasks,
   deleteTask,
   toggleTaskCompleted,
   toggleAllTaskCompleted,

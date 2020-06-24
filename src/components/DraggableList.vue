@@ -1,31 +1,29 @@
 <template>
-  <div>
-    <Draggable
-      :dragClass="$style.drag"
-      :ghostClass="$style.ghost"
-      :chosenClass="$style.chosen"
-      :sort="false"
-      handle=".handle"
+  <Draggable
+    :dragClass="$style.drag"
+    :ghostClass="$style.ghost"
+    :chosenClass="$style.chosen"
+    :sort="false"
+    handle=".handle"
+  >
+    <div
+      v-for="(item, index) in list"
+      ref="draggingItem"
+      :key="index"
+      :class="$style.taskWrapper"
+      @drop="event => drop(event, index)"
+      @dragstart="dragStart(index)"
+      @dragend="dragEnd(index)"
+      @dragover="event => dragOver(event, index)"
     >
-      <div
-        v-for="(item, index) in list"
-        ref="draggingItem"
-        :key="index"
-        :class="$style.taskWrapper"
-        @drop="event => drop(event, index)"
-        @dragstart="dragStart(index)"
-        @dragend="dragEnd(index)"
-        @dragover="event => dragOver(event, index)"
-      >
-        <DragIcon
-          v-if="selectedDateView"
-          class="handle"
-          :class="$style.dragIcon"
-        />
-        <slot :task="item" />
-      </div>
-    </Draggable>
-  </div>
+      <DragIcon
+        v-if="selectedDateView"
+        class="handle"
+        :class="$style.dragIcon"
+      />
+      <slot :task="item" />
+    </div>
+  </Draggable>
 </template>
 
 <script>
@@ -73,13 +71,15 @@ export default {
         ? newTaskIndex + 1
         : newTaskIndex
 
-      const foo = isDirectionUp ? newIndexPosition - 1 : newIndexPosition
+      const indexPosition = isDirectionUp
+        ? newIndexPosition - 1
+        : newIndexPosition
 
       const orderedDailyTasks = this.orderTasks(
         this.list,
         oldTaskIndex,
         newTaskIndexFromDirection,
-        foo,
+        indexPosition,
       )
 
       this.$emit('orderedTasks', orderedDailyTasks)
