@@ -16,11 +16,7 @@
       @dragend="dragEnd(index)"
       @dragover="event => dragOver(event, index)"
     >
-      <DragIcon
-        v-if="selectedDateView"
-        class="handle"
-        :class="$style.dragIcon"
-      />
+      <DragIcon v-if="!disabled" class="handle" :class="$style.dragIcon" />
       <slot :task="item" />
     </div>
   </Draggable>
@@ -40,7 +36,7 @@ export default {
       type: Array,
       required: true,
     },
-    selectedDateView: {
+    disabled: {
       type: Boolean,
       required: true,
     },

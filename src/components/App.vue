@@ -28,7 +28,7 @@
     </h2>
     <DraggableList
       :list="filteredByStatusTasks"
-      :selectedDateView="Boolean(selectedDateView)"
+      :disabled="disableDrag"
       @orderedTasks="handleOrderedTasks"
     >
       <template #default="{ task }">
@@ -127,6 +127,13 @@ export default {
     }
   },
   computed: {
+    disableDrag() {
+      return (
+        this.filter === ALL ||
+        this.status !== ALL ||
+        this.selectedTags.length > 0
+      )
+    },
     isInputAvailable() {
       return (
         this.selectedDate.format('YYYY-MM-DD') >= moment().format('YYYY-MM-DD')
@@ -136,7 +143,7 @@ export default {
       return this.filteredByStatusTasks.length !== 0
     },
     selectedDateView() {
-      return this.filter !== 'all' && this.selectedDate
+      return this.filter !== ALL && this.selectedDate
     },
     getFormat() {
       const selectedDate = this.selectedDateView
@@ -278,13 +285,13 @@ export default {
         : withoutselectedTags
     },
     handleFilterAll() {
-      this.filter = 'all'
+      this.filter = ALL
     },
     handleFilterDate() {
-      this.filter = 'date'
+      this.filter = DATE
     },
     handleStatusAll() {
-      this.status = 'all'
+      this.status = ALL
     },
     handleStatusTodo() {
       this.status = 'todo'
