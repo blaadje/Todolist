@@ -305,9 +305,8 @@ export default {
       })
     },
     toggleAllCompleted() {
-      const selectedDate = this.filter !== 'all' && this.selectedDate
       const getCompletedTasks = () => {
-        if (!selectedDate) {
+        if (!this.selectedDateView) {
           return this.tasks.map(task => {
             return {
               ...task,

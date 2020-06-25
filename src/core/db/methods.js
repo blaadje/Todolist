@@ -59,9 +59,12 @@ const editTasks = editedTasks => {
   db.get('todos')
     .each(task => {
       const editedTask = editedTasks.find(({ id }) => id === task.id) || false
+      if (!editedTask) {
+        return
+      }
 
-      Object.keys(task).forEach(key => {
-        task[key] = editedTask ? editedTask[key] : task[key]
+      Object.keys(editedTask).forEach(key => {
+        task[key] = editedTask[key]
       })
     })
     .write()
