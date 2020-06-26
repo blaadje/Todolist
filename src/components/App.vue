@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
+import { ipcRenderer, remote } from 'electron'
 
 import * as database from '@core/db/methods'
 import moment from 'moment'
@@ -79,6 +79,8 @@ import ua from 'universal-analytics'
 const DATE = 'date'
 const ALL = 'all'
 const CATEGORY_TASK = 'category-task'
+const CATEGORY_SYSTEM = 'category-system'
+const ACTION_VERSION = 'action-version'
 const ACTION_CREATE = 'action-create'
 const ACTION_DELETE = 'action-delete'
 const ACTION_EDIT = 'action-edit'
@@ -249,7 +251,9 @@ export default {
       return
     }
     this.user = ua(process.env.GOOGLE_ANALYTICS_ID, userId)
-    this.user.event('user', 'connect').send()
+    this.user
+      .event(CATEGORY_SYSTEM, ACTION_VERSION, remote.app.getVersion())
+      .send()
   },
   methods: {
     handleOrderedTasks(orderedTasks) {
