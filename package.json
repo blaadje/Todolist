@@ -53,6 +53,8 @@
     }
   },
   "dependencies": {
+    "@sentry/browser": "^5.18.1",
+    "@sentry/integrations": "^5.18.1",
     "dotenv": "^8.2.0",
     "lowdb": "^1.0.0",
     "moment": "^2.18.1",
