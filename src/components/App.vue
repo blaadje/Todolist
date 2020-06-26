@@ -9,6 +9,7 @@
       @saveColor="saveColor"
       @selectedDate="setDate"
       @selectedColor="setColor"
+      @exportTasks="handleExportTasks"
     />
     <TaskGenerator
       v-if="isInputAvailable"
@@ -148,9 +149,7 @@ export default {
       return this.filter !== ALL && this.selectedDate
     },
     getFormat() {
-      const selectedDate = this.selectedDateView
-
-      return selectedDate ? 'h:mm:ss a' : 'YYYY-MM-DD'
+      return this.selectedDateView ? 'h:mm:ss a' : 'YYYY-MM-DD'
     },
     isToday() {
       return (
@@ -256,6 +255,29 @@ export default {
       .send()
   },
   methods: {
+    handleExportTasks() {
+      const textarea = document.createElement('textarea')
+      const exportedString = `
+        ${this.filteredByStatusTasks.map(({ completed, name, date }) => {
+          const completedStatus = completed ? 'x' : ' '
+
+          return `- [${completedStatus}] ${name} - ${moment(date).format(
+            this.getFormat,
+          )}\n`
+        })}`
+        .trim()
+        .split(',')
+        .join('')
+
+      textarea.value = `Here is my task list: \n${exportedString}`
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    },
     handleOrderedTasks(orderedTasks) {
       this.editTasks(orderedTasks)
     },

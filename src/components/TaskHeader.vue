@@ -5,7 +5,9 @@
       :class="[$style.allCompletedWrapper, { [$style.isSelected]: allDone }]"
       @click="$emit('toggleAllCompleted')"
     >
-      <AllCompletedIcon :class="$style.allCompletedIcon" />
+      <div :class="$style.allCompletedIconWrapper">
+        <AllCompletedIcon :class="$style.allCompletedIcon" />
+      </div>
       <span :class="$style.allCompletedText">Toggle all completed</span>
     </div>
     <div
@@ -65,7 +67,8 @@ export default {
   cursor: pointer;
 }
 
-.transferTodayIconWrapper {
+.transferTodayIconWrapper,
+.allCompletedIconWrapper {
   border: 1px solid #efefef;
   border-radius: 50%;
   position: relative;
@@ -86,22 +89,25 @@ export default {
 .allCompletedWrapper {
   display: flex;
   cursor: pointer;
-  padding-top: 1.5rem;
-  padding-bottom: 1rem;
-  padding-left: 25px;
+  padding: 1.5rem;
   align-items: center;
+  position: relative;
 
   &.isSelected {
-    .allCompletedIcon {
-      fill: #ededed;
+    .allCompletedIconWrapper {
+      background: #ededed;
     }
   }
 }
 
 .allCompletedIcon {
-  transition: fill 1s ease-in-out;
-  width: 40px;
-  display: inline-block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 18px;
+  width: 18px;
+  stroke: #5dc2b1;
 }
 
 .allCompletedText {
