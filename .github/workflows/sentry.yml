@@ -11,7 +11,7 @@ jobs:
       - uses: tclindner/sentry-releases-action@v1.2.0
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: alexandre-zn
+          SENTRY_ORG: alexandrecharlot
           SENTRY_PROJECT: todolist
         with:
           tagName: ${{ github.ref }}

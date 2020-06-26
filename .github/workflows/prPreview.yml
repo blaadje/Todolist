@@ -22,7 +22,7 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         node-version: [12.16.2]
 
-    steps: 
+    steps:
       - name: checkout
         uses: actions/checkout@v2
 
@@ -44,8 +44,8 @@ jobs:
       - name: Deploy S3 Website
         uses: blaadje/s3-website-pr-action@master
         with:
-          bucket-prefix: "blaadje-todo-list-app"
-          folder-to-copy: "build"
+          bucket-prefix: 'blaadje-todo-list-app'
+          folder-to-copy: 'build'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
