@@ -1,52 +1,79 @@
 <template>
-  <div>
-    <UpdatesPanel v-if="updates.available" :updates="updates" />
-    <Header
-      :selectedDate="selectedDate"
-      :colors="colors"
-      :taskedDays="taskedDays"
-      :tags="tags"
-      @saveColor="saveColor"
-      @selectedDate="setDate"
-      @selectedColor="setColor"
-      @exportTasks="handleExportTasks"
-    />
+  <TransitionGroup
+    tag="div"
+    :class="$style.wrapper"
+    :enter-active-class="$style['slide-enter-active']"
+    :leave-active-class="$style['slide-leave-active']"
+    :enter-class="$style['slide-enter']"
+    :leave-to-class="$style['slide-leave-to']"
+    :move-class="$style['slide-move']"
+  >
+    <div :class="$style.topWrapper" key="topWrapper">
+      <UpdatesPanel v-if="updates.available" :updates="updates" />
+      <Header
+        :selectedDate="selectedDate"
+        :colors="colors"
+        :taskedDays="taskedDays"
+        :tags="tags"
+        @saveColor="saveColor"
+        @selectedDate="setDate"
+        @selectedColor="setColor"
+        @exportTasks="handleExportTasks"
+      />
+    </div>
     <TaskGenerator
       v-if="isInputAvailable"
       :tags="tags"
       @createTask="createTask"
+      key="taskGenerator"
     />
     <TaskHeader
+      v-if="hasTask"
       :hasRemainingTask="hasRemainingTask"
       :isToday="isToday"
-      :allDone="allDone"
+      :areTasksAllDone="areTasksAllDone"
       :hasTask="hasTask"
       @transferRemainingTasks="transferRemainingTasks"
       @toggleAllCompleted="toggleAllCompleted"
+      key="taskHeader"
     />
-    <h2 v-if="!hasTask">
-      There's no task
-    </h2>
-    <DraggableList
-      :list="filteredByStatusTasks"
-      :disabled="disableDrag"
-      @orderedTasks="handleOrderedTasks"
+    <Slider
+      @increment="handleIncrement"
+      @decrement="handleDecrement"
+      key="slider"
     >
-      <template #default="{ task }">
-        <Task
-          :class="$style.task"
-          :task="task"
-          :tags="tags"
-          :taskDateFormat="getFormat"
-          @setTaskCompleted="toggleTaskCompleted"
-          @deleteTask="deleteTask"
-          @editTask="editTask"
-        />
-      </template>
-    </DraggableList>
-
+      <div
+        v-for="(currentTasks, index) in sliderTasks"
+        :class="$style.taskList"
+        :key="index"
+      >
+        <h2 v-if="!currentTasks.length" :class="$style.emptyState">
+          There's no task
+        </h2>
+        <DraggableList
+          v-if="currentTasks.length"
+          :class="$style.draggableList"
+          :list="currentTasks"
+          :disabled="disableDrag"
+          @orderedTasks="handleOrderedTasks"
+        >
+          <template #default="{ task }">
+            <Task
+              :class="$style.task"
+              :task="task"
+              :tags="tags"
+              :taskDateFormat="getFormat"
+              @setTaskCompleted="toggleTaskCompleted"
+              @deleteTask="deleteTask"
+              @editTask="editTask"
+            />
+          </template>
+        </DraggableList>
+      </div>
+    </Slider>
     <Filters
-      :remaining="remaining"
+      key="filters"
+      :remaining="remainingTasksAmount"
       :colors="colors"
       :selectedTags="selectedTags"
       :tags="tags"
@@ -59,23 +86,25 @@
       @statusByTodo="handleStatusTodo"
       @statusByCompleted="handleStatusCompleted"
     />
-  </div>
+  </TransitionGroup>
 </template>
 
 <script>
 import { ipcRenderer, remote } from 'electron'
+import moment from 'moment'
+import ua from 'universal-analytics'
 
 import * as database from '@core/db/methods'
-import moment from 'moment'
+
 import Header from './Header'
+import Button from './Button'
 import Filters from './Filters'
 import TaskHeader from './TaskHeader'
 import Task from './Task'
 import UpdatesPanel from './UpdatesPanel'
 import TaskGenerator from './TaskGenerator'
 import DraggableList from './DraggableList'
-
-import ua from 'universal-analytics'
+import Slider from './Slider'
 
 const DATE = 'date'
 const ALL = 'all'
@@ -95,6 +124,8 @@ export default {
     Task,
     UpdatesPanel,
     DraggableList,
+    Button,
+    Slider,
   },
   data() {
     return {
@@ -124,94 +155,11 @@ export default {
         { color: '#A5A5A7', id: 7, name: null },
       ],
       selectedDate: moment(),
+      slidingDirection: 'left',
       selectedTags: [],
       filter: DATE,
       status: ALL,
     }
-  },
-  computed: {
-    disableDrag() {
-      return (
-        this.filter === ALL ||
-        this.status !== ALL ||
-        this.selectedTags.length > 0
-      )
-    },
-    isInputAvailable() {
-      return (
-        this.selectedDate.format('YYYY-MM-DD') >= moment().format('YYYY-MM-DD')
-      )
-    },
-    hasTask() {
-      return this.filteredByStatusTasks.length !== 0
-    },
-    selectedDateView() {
-      return this.filter !== ALL && this.selectedDate
-    },
-    getFormat() {
-      return this.selectedDateView ? 'h:mm:ss a' : 'YYYY-MM-DD'
-    },
-    isToday() {
-      return (
-        this.selectedDate.format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')
-      )
-    },
-    moment: () => moment,
-    hasRemainingTask() {
-      return (
-        this.tasks.filter(
-          task =>
-            moment(task.date).format('YYYY-MM-DD') <
-              moment().format('YYYY-MM-DD') && !task.completed,
-        ).length >= 1
-      )
-    },
-    remaining() {
-      return this.filteredByStatusTasks.filter(task => !task.completed).length
-    },
-    filteredByStatusTasks() {
-      switch (this.status) {
-        case 'completed':
-          return this.filteredTasks.filter(task => task.completed)
-        case 'todo':
-          return this.filteredTasks.filter(task => !task.completed)
-        default:
-          return this.filteredTasks
-      }
-    },
-    filteredTasks() {
-      return this.tasks
-        .sort((a, b) => b.orderIndex - a.orderIndex)
-        .filter(task =>
-          this.filter === DATE
-            ? moment(task.date).format('YYYY-MM-DD') ===
-              this.selectedDate.format('YYYY-MM-DD')
-            : true,
-        )
-        .filter(task =>
-          this.selectedTags.length > 0
-            ? task.tagId && this.selectedTags.includes(task.tagId)
-            : true,
-        )
-    },
-    taskedDays() {
-      return this.tasks.reduce((acc, task) => {
-        if (
-          acc.length &&
-          acc.every(
-            item =>
-              moment(item).format('YYYY-MM-DD') ===
-              moment(task.date).format('YYYY-MM-DD'),
-          )
-        ) {
-          return acc
-        }
-        return [...acc, moment(task.date).format('YYYY-MM-DD')]
-      }, [])
-    },
-    allDone() {
-      return this.remaining === 0
-    },
   },
   created() {
     ipcRenderer.on('update-available', (event, { state, information }) => {
@@ -254,11 +202,128 @@ export default {
       .event(CATEGORY_SYSTEM, ACTION_VERSION, remote.app.getVersion())
       .send()
   },
+  computed: {
+    disableDrag() {
+      return (
+        this.filter === ALL ||
+        this.status !== ALL ||
+        this.selectedTags.length > 0
+      )
+    },
+    isInputAvailable() {
+      return (
+        this.selectedDate.format('YYYY-MM-DD') >= moment().format('YYYY-MM-DD')
+      )
+    },
+    hasTask() {
+      return Boolean(this.currentDayTasks.length !== 0)
+    },
+    selectedDateView() {
+      return this.filter !== ALL && this.selectedDate
+    },
+    getFormat() {
+      return this.selectedDateView ? 'h:mm:ss a' : 'YYYY-MM-DD'
+    },
+    isToday() {
+      return (
+        this.selectedDate.format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')
+      )
+    },
+    hasRemainingTask() {
+      return (
+        this.tasks.filter(
+          task =>
+            moment(task.date).format('YYYY-MM-DD') <
+              moment().format('YYYY-MM-DD') && !task.completed,
+        ).length >= 1
+      )
+    },
+    remainingTasksAmount() {
+      return this.currentDayTasks.filter(task => !task.completed).length
+    },
+    taskedDays() {
+      return this.tasks.reduce((acc, { date, completed }) => {
+        if (Object.keys(acc).some(item => item === date)) {
+          return acc
+        }
+
+        const hasCompleted = this.tasks
+          .filter(task => task.date === date)
+          .every(task => task.completed)
+
+        return {
+          ...acc,
+          [moment(date).format('YYYY-MM-DD')]: { completed: hasCompleted },
+        }
+      }, {})
+    },
+    areTasksAllDone() {
+      return Boolean(this.remainingTasksAmount === 0)
+    },
+    previousDayTasks() {
+      return this.getFilteredTasks(
+        this.getTasksByDate(
+          this.getSortedTasks(this.tasks),
+          moment(this.selectedDate).subtract(1, 'day'),
+        ),
+      )
+    },
+    currentDayTasks() {
+      return this.getFilteredTasks(
+        this.getTasksByDate(this.getSortedTasks(this.tasks)),
+      )
+    },
+    nextDayTasks() {
+      return this.getFilteredTasks(
+        this.getTasksByDate(
+          this.getSortedTasks(this.tasks),
+          moment(this.selectedDate).add(1, 'day'),
+        ),
+      )
+    },
+    sliderTasks() {
+      return [this.previousDayTasks, this.currentDayTasks, this.nextDayTasks]
+    },
+  },
   methods: {
+    handleIncrement() {
+      this.selectedDate = moment(this.selectedDate).add(1, 'day')
+    },
+    handleDecrement() {
+      this.selectedDate = moment(this.selectedDate).subtract(1, 'day')
+    },
+    getFilteredTasks(tasks) {
+      const filteredTasks = tasks.filter(task =>
+        this.selectedTags.length > 0
+          ? task.tagId && this.selectedTags.includes(task.tagId)
+          : true,
+      )
+
+      switch (this.status) {
+        case 'completed':
+          return filteredTasks.filter(task => task.completed)
+        case 'todo':
+          return filteredTasks.filter(task => !task.completed)
+        default:
+          return filteredTasks
+      }
+    },
+    getSortedTasks(tasks, field = 'orderIndex') {
+      return tasks
+        .slice()
+        .sort((previous, next) => next[field] - previous[field])
+    },
+    getTasksByDate(tasks, date = this.selectedDate) {
+      return tasks.filter(task =>
+        this.filter === DATE
+          ? moment(task.date).format('YYYY-MM-DD') === date.format('YYYY-MM-DD')
+          : true,
+      )
+    },
     handleExportTasks() {
       const textarea = document.createElement('textarea')
       const exportedString = `
-        ${this.filteredByStatusTasks.map(({ completed, name, date }) => {
+        ${this.currentDayTasks.map(({ completed, name, date }) => {
           const completedStatus = completed ? 'x' : ' '
 
           return `- [${completedStatus}] ${name} - ${moment(date).format(
@@ -343,7 +408,7 @@ export default {
           return this.tasks.map(task => {
             return {
               ...task,
-              completed: !this.allDone,
+              completed: !this.areTasksAllDone,
             }
           })
         }
@@ -358,18 +423,20 @@ export default {
 
           return {
             ...task,
-            completed: !this.allDone,
+            completed: !this.areTasksAllDone,
           }
         })
       }
       this.tasks = getCompletedTasks()
 
-      database.toggleAllTaskCompleted(selectedDate, this.allDone)
+      database.toggleAllTaskCompleted(selectedDate, this.areTasksAllDone)
     },
     saveColor() {
       database.addColor(this.colors)
     },
     setDate(date) {
+      this.slidingDirection =
+        date > moment(this.selectedDate) ? 'right' : 'left'
       this.datePickerVisible = false
       this.selectedDate = date
     },
@@ -438,6 +505,7 @@ $clearBlue: #62bafe;
 $darkBlue: #6ef1fe;
 $grey: #c2c2c2;
 $lightGrey: #757575;
+$duration: 0.5s;
 
 body,
 h1,
@@ -469,6 +537,13 @@ ul {
   margin: 0;
 }
 
+.wrapper {
+  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .slideUp-enter-active {
   transition: all 0.5s cubic-bezier(0, 0.54, 0.5, 1);
 }
@@ -485,5 +560,50 @@ ul {
 
 .task {
   flex: 1;
+}
+
+.emptyState {
+  width: 100%;
+  flex-grow: 1;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.topWrapper {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.taskListWrapper {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.draggableList {
+  width: 100%;
+}
+
+.slide-enter-active,
+.slide-leave-active,
+.slide-move {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.slide-enter,
+.slide-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.slide-leave-active {
+  position: absolute;
+  left: 0;
+  right: 0;
 }
 </style>

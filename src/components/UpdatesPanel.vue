@@ -26,13 +26,9 @@
             {{ updates.information && updates.information.version }}
           </a>
           <div :class="$style.isAvailableText">is available !</div>
-          <div
-            v-if="updates.downloaded"
-            :class="$style.installUpdate"
-            @click="handleInstall"
-          >
+          <Button v-if="updates.downloaded" @click="handleInstall">
             Install
-          </div>
+          </Button>
           <span v-if="!updates.downloaded">
             Downloading...
           </span>
@@ -45,12 +41,14 @@
 <script>
 import { ipcRenderer } from 'electron'
 import DownloadIcon from '@assets/download.svg'
+import Button from './Button'
 import ProgressBar from './ProgressBar'
 
 export default {
   components: {
     DownloadIcon,
     ProgressBar,
+    Button,
   },
   props: {
     updates: {
@@ -154,20 +152,6 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-}
-
-.installUpdate {
-  display: inline-block;
-  background: none;
-  border: 1px solid white;
-  color: white;
-  padding: 0.3rem;
-  border-radius: 0.2rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  font-weight: bold;
-  margin-left: auto;
-  text-transform: uppercase;
 }
 
 .isAvailableText {

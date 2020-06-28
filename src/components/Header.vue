@@ -5,10 +5,7 @@
         {{ selectedDate.format('YYYY-MM-DD') }}
       </span>
       <div :class="$style.icons">
-        <ColorPickerIcon
-          :class="$style.icon"
-          @click="colorPickerVisible = true"
-        />
+        <ColorPickerIcon :class="$style.icon" @click="sketchVisible = true" />
         <ClipboardIcon
           v-if="!isExported"
           :class="$style.icon"
@@ -23,6 +20,7 @@
       </div>
       <DatePicker
         v-if="datePickerVisible"
+        :class="$style.datePicker"
         v-click-outside="hideDatePicker"
         :colors="colors"
         :selected-date="selectedDate"
@@ -33,26 +31,14 @@
     </div>
     <Transition name="slideUp">
       <div
-        v-if="colorPickerVisible"
-        v-click-outside="hideColorPicker"
-        :class="$style.pickerContent"
+        v-if="sketchVisible"
+        v-click-outside="hideSketchPicker"
+        :class="$style.sketchWrapper"
       >
         <Sketch :class="$style.sketch" :value="colors" @input="handleSketch" />
-        <button
-          :style="{
-            background: colors.hex,
-            border: '1px solid' + colors.hex,
-          }"
-          :class="$style.sketchButton"
-          @click="
-            () => {
-              colorPickerVisible = false
-              $emit('saveColor')
-            }
-          "
-        >
-          Ok
-        </button>
+        <Button filled :color="colors.hex" @click="handleColorSave">
+          Save
+        </Button>
       </div>
     </Transition>
   </header>
@@ -62,11 +48,12 @@
 import moment from 'moment'
 import { Sketch } from 'vue-color'
 
-import DatePicker from './DatePicker'
-
 import ColorPickerIcon from '@assets/color-picker.svg'
 import ClipboardIcon from '@assets/clipboard.svg'
 import CheckIcon from '@assets/check.svg'
+
+import DatePicker from './DatePicker'
+import Button from './Button'
 
 export default {
   components: {
@@ -75,6 +62,7 @@ export default {
     ColorPickerIcon,
     ClipboardIcon,
     CheckIcon,
+    Button,
   },
   props: {
     tags: {
@@ -90,27 +78,28 @@ export default {
       required: true,
     },
     taskedDays: {
-      type: Array,
+      type: Object,
       required: true,
     },
   },
   data() {
     return {
-      colorPickerVisible: false,
+      sketchVisible: false,
       datePickerVisible: false,
       isExported: false,
       timeout: null,
     }
   },
   methods: {
-    hideColorPicker() {
-      this.colorPickerVisible = false
+    hideSketchPicker() {
+      this.sketchVisible = false
     },
     hideDatePicker() {
       this.datePickerVisible = false
     },
     handleExportTask() {
       clearTimeout(this.timeout)
+
       this.isExported = true
       this.$emit('exportTasks')
       this.timeout = setTimeout(() => {
@@ -119,6 +108,10 @@ export default {
     },
     handleSketch(color) {
       return this.$emit('selectedColor', color)
+    },
+    handleColorSave() {
+      this.sketchVisible = false
+      this.$emit('saveColor')
     },
     handleSelectedDate(date) {
       return this.$emit('selectedDate', date)
@@ -131,8 +124,6 @@ export default {
 .wrapper {
   width: 100%;
   margin: 0;
-  top: 0;
-  position: sticky;
   padding: 0;
   z-index: 4;
   -webkit-app-region: drag;
@@ -149,39 +140,26 @@ export default {
   margin: 0 0.4rem;
 }
 
-.sketch {
-  box-shadow: none !important;
-  position: absolute;
-  left: 0;
-  border: none !important;
+.sketch.sketch {
   box-shadow: none;
-  border-radius: 0 !important;
-  right: 0;
-  margin: auto;
-  background: transparent !important;
+  border: none;
+  width: auto;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
 }
 
-.sketchButton {
-  position: absolute;
-  right: 1em;
-  bottom: 1em;
-  cursor: pointer;
-  outline: none;
-  padding: 0.6em 1em;
-  border-radius: 0.2em;
-  color: white;
-  text-transform: uppercase;
-}
-
-.pickerContent {
+.sketchWrapper {
   position: absolute;
   box-shadow: 2px 6px 8px 3px rgba(0, 0, 0, 0.1);
   background: rgba(255, 255, 255, 0.8);
   width: 230px;
-  height: 350px;
   text-align: right;
+  padding: 1rem;
   left: 0;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   right: 0;
   margin: auto;
   z-index: 5;
@@ -244,5 +222,15 @@ export default {
 .checkIcon {
   fill: none;
   position: relative;
+}
+
+.datePicker {
+  position: absolute;
+  left: 0;
+  top: 133px;
+  right: 0;
+  width: 392px;
+  margin: auto;
+  z-index: 6;
 }
 </style>

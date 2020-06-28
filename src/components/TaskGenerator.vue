@@ -58,6 +58,7 @@ export default {
 .wrapper {
   display: flex;
   position: relative;
+  background: white;
   z-index: 2;
 }
 

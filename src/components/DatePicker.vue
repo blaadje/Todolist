@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.wrapper">
+  <div>
     <div
       :class="$style.triangle"
       :style="{
@@ -10,37 +10,87 @@
       <div :class="$style.header" :style="{ background: colors.hex }">
         <span :class="$style.year">{{ selectedDate.format('YYYY') }}</span>
         <span :class="$style.date">
-          {{ selectedDate.format('dddd DD MMM') }}
+          {{ selectedDate.format('dddd DD MMMM') }}
         </span>
       </div>
       <div :class="$style.days">
-        <div :class="$style.controls">
-          <Next :class="$style.arrows" @click="prevMonth()" />
-          <label>{{ month.getFormatted() }}</label>
-          <Previous :class="$style.arrows" @click="nextMonth()" />
-        </div>
-        <div v-for="(day, index) in days" :key="index" :class="$style.weekdays">
-          {{ day }}
-        </div>
-        <div :class="$style.daysWrapper">
-          <div
-            :class="$style.spacer"
-            :style="{ width: month.getWeekStart() * 52 + 'px' }"
-          />
-          <div
-            v-for="(day, index) in month.getDays()"
-            :key="`day${index}`"
-            :class="[$style.day, { [$style.selected]: isSelected(day) }]"
-            @click="selectDate(day)"
+        <div :class="$style.shortcuts">
+          <Button
+            :color="colors.hex"
+            :class="$style.button"
+            :disabled="isToday(selectedDate)"
+            @click="handleToday"
           >
-            <span
-              :class="$style.overlay"
-              :style="{ background: colors.hex }"
-            ></span>
-            <span v-if="dayHasTask(day)" :class="$style.taskedOverlay" />
-            <span v-if="isToday(day)" :class="$style.todayOverlay" />
-            <span :class="$style.text">{{ day.format('D') }}</span>
+            Today
+          </Button>
+          <Button
+            :color="colors.hex"
+            :class="$style.button"
+            @click="handleTomorrow"
+          >
+            Tomorrow
+          </Button>
+          <Button
+            :color="colors.hex"
+            :class="$style.button"
+            @click="handleNextWeek"
+          >
+            Next Week
+          </Button>
+        </div>
+        <label :class="$style.month">{{ month.getFormatted() }}</label>
+        <div :class="$style.weekdaysBackground">
+          <div :class="$style.weekdaysWrapper">
+            <div
+              v-for="(day, index) in days"
+              :key="index"
+              :style="{ width: `${daySize}px`, height: `${daySize}px` }"
+              :class="$style.weekdays"
+            >
+              {{ day }}
+            </div>
           </div>
+        </div>
+        <div ref="calendar" :class="$style.slidingElement">
+          <Slider @increment="handleIncrement" @decrement="handleDecrement">
+            <div
+              v-for="(month, index) in sliderMonths"
+              :class="$style.daysWrapper"
+              :key="index"
+            >
+              <div
+                v-for="(day, index) in previousMonthDays(month)"
+                :class="$style.spacer"
+                :key="`weekday${index}`"
+                :style="{ width: `${daySize}px`, height: `${daySize}px` }"
+              >
+                {{ day.format('D') }}
+              </div>
+              <div
+                v-for="(day, index) in month.getDays()"
+                :key="`day${index}`"
+                :class="[$style.day, { [$style.selected]: isSelected(day) }]"
+                :style="{ width: `${daySize}px`, height: `${daySize}px` }"
+                @click="selectDate(day)"
+              >
+                <span
+                  :class="$style.overlay"
+                  :style="{ background: colors.hex }"
+                />
+                <span
+                  v-if="dayHasTask(day)"
+                  :class="[
+                    $style.dayHasTaskOverlay,
+                    {
+                      [$style.isCompleted]: dayHasTask(day).completed,
+                    },
+                  ]"
+                />
+                <span v-if="isToday(day)" :class="$style.todayOverlay" />
+                <span :class="$style.text">{{ day.format('D') }}</span>
+              </div>
+            </div>
+          </Slider>
         </div>
       </div>
     </div>
@@ -48,19 +98,25 @@
 </template>
 
 <script>
+import moment from 'moment'
+
 import Month from '@core/month.js'
 import Next from '@assets/next.svg'
 import Previous from '@assets/previous.svg'
-import moment from 'moment'
+
+import Button from './Button'
+import Slider from './Slider'
 
 export default {
   components: {
     Next,
     Previous,
+    Button,
+    Slider,
   },
   props: {
     taskedDays: {
-      type: Array,
+      type: Object,
       required: true,
     },
     selectedDate: {
@@ -74,25 +130,134 @@ export default {
   },
   data() {
     return {
+      daySize: 0,
+      calendarSlidingDirection: 'left',
       localSelectedDate: this.selectedDate,
-      days: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
+      days: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
       month: new Month(this.selectedDate.month(), this.selectedDate.year()),
     }
   },
+  mounted() {
+    this.setDaySize()
+  },
+  computed: {
+    previousMonth() {
+      return new Month(this.month.month - 1, this.selectedDate.year())
+    },
+    nextMonth() {
+      return new Month(this.month.month + 1, this.selectedDate.year())
+    },
+    sliderMonths() {
+      return [this.previousMonth, this.month, this.nextMonth]
+    },
+  },
+  watch: {
+    selectedDate(value) {
+      this.month = new Month(value.month(), this.month.year)
+    },
+  },
   methods: {
+    previousMonthDays(currentMonth) {
+      let month = currentMonth.month - 1
+      let year = currentMonth.year
+      if (month < 0) {
+        year -= 1
+        month = 11
+      }
+      const previousMonthDaysAmount = currentMonth.getWeekStart() - 2
+
+      if (previousMonthDaysAmount <= 0) {
+        return []
+      }
+
+      const previousMonth = new Month(month, year)
+      const start = moment(previousMonth.end).subtract(
+        previousMonthDaysAmount,
+        'days',
+      )
+      const end = previousMonth.end
+
+      const range = moment.range(start, end)
+
+      return Array.from(range.by('day'))
+    },
+    handleIncrement() {
+      this.setNextMonth()
+    },
+    handleDecrement() {
+      this.setPrevMonth()
+    },
+    handleToday() {
+      const today = moment()
+      if (
+        moment(this.selectedDate).format('YYYY-MM-DD') ===
+        today.format('YYYY-MM-DD')
+      ) {
+        return
+      }
+
+      this.selectDate(today)
+    },
+    handleTomorrow() {
+      const tomorrow = moment().add(1, 'day')
+
+      if (
+        moment(this.selectedDate).format('YYYY-MM-DD') ===
+        tomorrow.format('YYYY-MM-DD')
+      ) {
+        return
+      }
+
+      this.selectDate(tomorrow)
+    },
+    handleNextWeek() {
+      const nextWeek = moment().add(1, 'week')
+
+      if (
+        moment(this.selectedDate).format('YYYY-MM-DD') ===
+        nextWeek.format('YYYY-MM-DD')
+      ) {
+        return
+      }
+
+      this.selectDate(nextWeek)
+    },
+    setDaySize() {
+      const daysInWeek = 7
+
+      const element = this.$refs.calendar
+      const padding = Number(
+        getComputedStyle(element).paddingLeft.split('px')[0],
+      )
+
+      this.daySize = (element.clientWidth - padding * 2) / daysInWeek
+    },
     dayHasTask(day) {
-      return this.taskedDays.some(item => item === day.format('YYYY-MM-DD'))
+      const formattedDay = moment(day).format('YYYY-MM-DD')
+
+      return this.taskedDays[formattedDay]
     },
     isToday(day) {
       return moment().format('YYYY-MM-DD') === day.format('YYYY-MM-DD')
     },
-    nextMonth() {
+    setPrevMonth() {
+      let month = this.month.month - 1
+      let year = this.month.year
+      if (month < 0) {
+        year -= 1
+        month = 11
+      }
+
+      this.month = new Month(month, year)
+    },
+    setNextMonth() {
       let month = this.month.month + 1
       let year = this.month.year
       if (month > 11) {
         year += 1
         month = 0
       }
+
       this.month = new Month(month, year)
     },
     getMonth() {
@@ -100,17 +265,7 @@ export default {
       let yy = this.month.year
 
       mm = mm < 10 ? '0' + mm : mm
-
       return yy + '-' + mm
-    },
-    prevMonth() {
-      let month = this.month.month - 1
-      let year = this.month.year
-      if (month < 0) {
-        year -= 1
-        month = 11
-      }
-      this.month = new Month(month, year)
     },
     isSelected(day) {
       return (
@@ -126,26 +281,28 @@ export default {
 </script>
 
 <style lang="scss" module>
-.daysWrapper {
-  z-index: 20;
-  position: relative;
-  display: inline-flex;
-  flex-wrap: wrap;
+.shortcuts {
+  padding: 1rem 2.8rem;
+  border-bottom: 1px solid #ededed;
 }
 
-.wrapper {
-  position: absolute;
-  left: 0;
-  top: 130px;
-  right: 0;
-  width: 392px;
-  margin: auto;
-  z-index: 2;
+.weekdaysBackground {
+  padding: 0.2rem 0;
+  background: #f5f7fc;
+  display: flex;
+  justify-content: center;
+  color: #b6c1d6;
+}
+
+.daysWrapper {
+  width: 100%;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
 }
 
 .agenda {
   overflow: hidden;
-  background: rgba(white, 0.8);
   border-radius: 0.2rem;
   box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
 }
@@ -177,11 +334,6 @@ export default {
   font-size: 1.5em;
 }
 
-.days {
-  width: 392px;
-  padding: 0 14px 14px 14px;
-}
-
 .controls {
   position: relative;
   display: flex;
@@ -206,21 +358,24 @@ export default {
   color: #757575;
 }
 
+.weekdaysWrapper {
+  display: flex;
+}
+
 .weekdays {
-  border-bottom: 1px solid #ededed;
-  text-align: center;
-  color: #757575;
-  padding: 14px;
-  padding-top: 0;
-  width: 52px;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.calendar {
+  padding: 2rem;
 }
 
 .spacer {
-  height: 52px;
-  vertical-align: top;
-  text-align: center;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #b6c1d6;
 }
 
 .day {
@@ -229,8 +384,11 @@ export default {
   justify-content: center;
   position: relative;
   cursor: pointer;
-  height: 52px;
-  width: 52px;
+  font-weight: bold;
+}
+
+.days {
+  background: white;
 }
 
 .agenda .days .day.selected .text {
@@ -272,18 +430,19 @@ export default {
   border-radius: 50%;
 }
 
-.taskedOverlay {
+.dayHasTaskOverlay {
+  height: 5px;
+  width: 5px;
+  background: #ed687b;
   transform-origin: center;
-  transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1);
   position: absolute;
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  box-shadow: 0px 0px 0px 1px #c2c2c2;
-  top: 50%;
-  left: 50%;
-  height: 80%;
-  width: 80%;
+  top: 6px;
+  right: 6px;
   border-radius: 50%;
+
+  &.isCompleted {
+    background: #2ec684;
+  }
 }
 
 .todayOverlay {
@@ -292,7 +451,7 @@ export default {
   left: 0;
   transform: translate(-50%, -50%);
   background: #ededed;
-  z-index: -1;
+  z-index: 1;
   top: 50%;
   left: 50%;
   height: 80%;
@@ -304,5 +463,20 @@ export default {
   transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1);
   position: relative;
   color: #757575;
+  z-index: 2;
+}
+
+.month {
+  padding: 1.5rem 2.8rem;
+  display: block;
+}
+
+.slidingElement {
+  padding: 2rem;
+  padding-top: 1rem;
+}
+
+.button {
+  margin-right: 0.5rem;
 }
 </style>

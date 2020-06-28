@@ -1,5 +1,6 @@
 <template>
   <div :class="[$style.wrapper, { [$style.vertical]: !horizontal }]">
+    <Pellet @click.native="$emit('selectedTag')" />
     <Pellet
       v-for="tag in tags"
       :class="{
@@ -9,7 +10,6 @@
       :background="tag.color"
       @click.native="$emit('selectedTag', tag.id)"
     />
-    <Pellet @click.native="$emit('selectedTag')" />
   </div>
 </template>
 

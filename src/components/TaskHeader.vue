@@ -2,7 +2,10 @@
   <div :class="$style.wrapper">
     <div
       v-if="hasTask"
-      :class="[$style.allCompletedWrapper, { [$style.isSelected]: allDone }]"
+      :class="[
+        $style.allCompletedWrapper,
+        { [$style.isSelected]: areTasksAllDone },
+      ]"
       @click="$emit('toggleAllCompleted')"
     >
       <div :class="$style.allCompletedIconWrapper">
@@ -39,7 +42,7 @@ export default {
       type: Boolean,
       required: true,
     },
-    allDone: {
+    areTasksAllDone: {
       type: Boolean,
       required: true,
     },
@@ -58,6 +61,8 @@ export default {
 <style lang="scss" module>
 .wrapper {
   display: flex;
+  z-index: 1;
+  position: relative;
 }
 
 .transferRemainingWrapper {
