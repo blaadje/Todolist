@@ -1,8 +1,8 @@
 name: Deploy for preview
 
 on:
-  pull_request:
-    branches: [master]
+  repository_dispatch:
+    types: [deploy-command]
 
 jobs:
   comment:
