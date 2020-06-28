@@ -1,13 +1,18 @@
 name: Deploy for preview
 
 on:
-  pull_request:
-    branches: [master]
+  repository_dispatch:
+    types: [deploy-command]
 
 jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
       - uses: mshick/add-pr-comment@v1
         with:
           message: |
@@ -23,8 +28,11 @@ jobs:
         node-version: [12.16.2]
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
