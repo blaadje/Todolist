@@ -10,5 +10,5 @@ jobs:
       - name: Slash Command Dispatch
         uses: peter-evans/slash-command-dispatch@v1
         with:
-          token: ${{ secrets.github_token }}
+          token: ${{ secrets.TOKEN_ACCESS }}
           commands: deploy
