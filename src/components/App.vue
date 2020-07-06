@@ -447,7 +447,7 @@ export default {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
       const date = this.selectedDate
       const higherTaskIndex =
-        (this.tasks.length && this.tasks[0].orderIndex) || 0
+        (this.currentDayTasks.length && this.currentDayTasks[0].orderIndex) || 0
 
       const task = {
         name: newTask,
@@ -597,6 +597,7 @@ ul {
 }
 .slide-enter,
 .slide-leave-to {
+  overflow: hidden;
   transform: translateY(-100%);
   opacity: 0;
 }

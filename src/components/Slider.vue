@@ -18,6 +18,7 @@ let time2 = null
 let isAnimating = false
 let newEvent = null
 let oldDelta = null
+let oldDraggingPosition = 0
 
 export default {
   mounted() {
@@ -38,14 +39,42 @@ export default {
     window.addEventListener('resize', this.handleResize)
     this.$refs.wrapper.addEventListener('mousewheel', this.detectSwipe)
     this.$refs.wrapper.addEventListener('swipe', this.updateElements)
+    this.$refs.wrapper.addEventListener('mouseup', this.removeMouseMoveEvent)
+    this.$refs.wrapper.addEventListener('mousedown', this.addMouseMoveEvent)
+    this.$refs.wrapper.addEventListener('mouseleave', this.removeMouseMoveEvent)
   },
   methods: {
+    removeMouseMoveEvent() {
+      oldDraggingPosition = 0
+      this.$refs.wrapper &&
+        this.$refs.wrapper.removeEventListener('mousemove', this.updateElements)
+    },
+    addMouseMoveEvent(event) {
+      const isClickOnDraggingHandler = event.path.some(item => {
+        if (
+          item.className &&
+          item.className.baseVal &&
+          item.className.baseVal
+        ) {
+          return item.className.baseVal.includes('handle')
+        }
+      })
+
+      if (isClickOnDraggingHandler) {
+        return
+      }
+
+      oldDraggingPosition = event.x
+      this.$refs.wrapper.addEventListener('mousemove', this.updateElements)
+    },
     detectSwipe() {
       const difference = event.deltaX - oldDelta
+      const treshold = 3
 
       if (
-        (event.deltaX > 0 && difference > 0) ||
-        (event.deltaX < 0 && difference < 0)
+        ((event.deltaX > 0 && difference > 0) ||
+          (event.deltaX < 0 && difference < 0)) &&
+        (event.deltaX < -treshold || event.deltaX > treshold)
       ) {
         newEvent = new event.constructor('swipe', event)
 
@@ -54,7 +83,9 @@ export default {
 
       oldDelta = event.deltaX
     },
-    updateElements() {
+    updateElements(event) {
+      const movement = event.deltaX * 2 || oldDraggingPosition - event.x
+
       if (isAnimating) {
         return
       }
@@ -78,7 +109,7 @@ export default {
       )
       const isRight = scrollingElementMiddlePosition < wrapperMiddlePosition
 
-      transform += event.deltaX * 2
+      transform += movement
 
       if (state === UPDATE_CANCELLED) {
         elements.map((element, index) => {
@@ -190,5 +221,6 @@ export default {
   overflow: hidden;
   flex-wrap: nowrap;
   scroll-behavior: auto;
+  user-select: none;
 }
 </style>

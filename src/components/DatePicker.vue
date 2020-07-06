@@ -153,7 +153,7 @@ export default {
   },
   watch: {
     selectedDate(value) {
-      this.month = new Month(value.month(), this.month.year)
+      this.month = new Month(value.month(), value.year())
     },
   },
   methods: {
