@@ -303,6 +303,7 @@ export default {
 
 .agenda {
   overflow: hidden;
+  user-select: none;
   border-radius: 0.2rem;
   box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
 }
