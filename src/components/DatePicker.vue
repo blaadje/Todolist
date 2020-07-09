@@ -12,13 +12,14 @@
         <span :class="$style.date">
           {{ selectedDate.format('dddd DD MMMM') }}
         </span>
+        <span>(week {{ selectedDate.week() }})</span>
       </div>
       <div :class="$style.days">
         <div :class="$style.shortcuts">
           <Button
             :color="colors.hex"
             :class="$style.button"
-            :disabled="isToday(selectedDate)"
+            :disabled="shouldDisableToday"
             @click="handleToday"
           >
             Today
@@ -38,7 +39,11 @@
             Next Week
           </Button>
         </div>
-        <label :class="$style.month">{{ month.getFormatted() }}</label>
+        <div :class="$style.month">
+          <LeftArrowIcon :class="$style.leftArrowIcon" @click="setPrevMonth" />
+          <LeftArrowIcon :class="$style.rightArrowIcon" @click="setNextMonth" />
+          {{ month.getFormatted() }}
+        </div>
         <div :class="$style.weekdaysBackground">
           <div :class="$style.weekdaysWrapper">
             <div
@@ -103,6 +108,7 @@ import moment from 'moment'
 import Month from '@core/month.js'
 import Next from '@assets/next.svg'
 import Previous from '@assets/previous.svg'
+import LeftArrowIcon from '@assets/leftArrow.svg'
 
 import Button from './Button'
 import Slider from './Slider'
@@ -113,6 +119,7 @@ export default {
     Previous,
     Button,
     Slider,
+    LeftArrowIcon,
   },
   props: {
     taskedDays: {
@@ -141,6 +148,12 @@ export default {
     this.setDaySize()
   },
   computed: {
+    shouldDisableToday() {
+      return (
+        this.isToday(this.selectedDate) &&
+        this.month.month === this.selectedDate.month()
+      )
+    },
     previousMonth() {
       return new Month(this.month.month - 1, this.selectedDate.year())
     },
@@ -188,15 +201,11 @@ export default {
       this.setPrevMonth()
     },
     handleToday() {
-      const today = moment()
-      if (
-        moment(this.selectedDate).format('YYYY-MM-DD') ===
-        today.format('YYYY-MM-DD')
-      ) {
+      if (this.shouldDisableToday) {
         return
       }
 
-      this.selectDate(today)
+      this.selectDate(moment())
     },
     handleTomorrow() {
       const tomorrow = moment().add(1, 'day')
@@ -468,8 +477,10 @@ export default {
 }
 
 .month {
-  padding: 1.5rem 2.8rem;
+  padding: 1rem 2.8rem;
   display: block;
+  display: flex;
+  align-items: center;
 }
 
 .slidingElement {
@@ -479,5 +490,23 @@ export default {
 
 .button {
   margin-right: 0.5rem;
+}
+
+.rightArrowIcon,
+.leftArrowIcon {
+  width: 35px;
+  height: 35px;
+  border-radius: 0.2rem;
+  padding: 0.7rem 0.5rem;
+  cursor: pointer;
+  &:hover {
+    background: #f6f7fc;
+  }
+}
+
+.rightArrowIcon {
+  transform: rotate(180deg);
+  margin: 0.2rem;
+  margin-right: 1rem;
 }
 </style>

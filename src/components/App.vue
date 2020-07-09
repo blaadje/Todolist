@@ -1,76 +1,78 @@
 <template>
-  <TransitionGroup
-    tag="div"
-    :class="$style.wrapper"
-    :enter-active-class="$style['slide-enter-active']"
-    :leave-active-class="$style['slide-leave-active']"
-    :enter-class="$style['slide-enter']"
-    :leave-to-class="$style['slide-leave-to']"
-    :move-class="$style['slide-move']"
-  >
-    <div :class="$style.topWrapper" key="topWrapper">
-      <UpdatesPanel v-if="updates.available" :updates="updates" />
-      <Header
-        :selectedDate="selectedDate"
-        :colors="colors"
-        :taskedDays="taskedDays"
-        :tags="tags"
-        @saveColor="saveColor"
-        @selectedDate="setDate"
-        @selectedColor="setColor"
-        @exportTasks="handleExportTasks"
-      />
-    </div>
-    <TaskGenerator
-      v-if="isInputAvailable"
-      :tags="tags"
-      @createTask="createTask"
-      key="taskGenerator"
-    />
-    <TaskHeader
-      v-if="hasTask"
-      :hasRemainingTask="hasRemainingTask"
-      :isToday="isToday"
-      :areTasksAllDone="areTasksAllDone"
-      :hasTask="hasTask"
-      @transferRemainingTasks="transferRemainingTasks"
-      @toggleAllCompleted="toggleAllCompleted"
-      key="taskHeader"
-    />
-    <Slider
-      @increment="handleIncrement"
-      @decrement="handleDecrement"
-      key="slider"
+  <div :class="$style.wrapper">
+    <TransitionGroup
+      :class="$style.transition"
+      tag="div"
+      :enter-active-class="$style['slide-enter-active']"
+      :leave-active-class="$style['slide-leave-active']"
+      :enter-class="$style['slide-enter']"
+      :leave-to-class="$style['slide-leave-to']"
+      :move-class="$style['slide-move']"
     >
-      <div
-        v-for="(currentTasks, index) in sliderTasks"
-        :class="$style.taskList"
-        :key="index"
-      >
-        <h2 v-if="!currentTasks.length" :class="$style.emptyState">
-          There's no task
-        </h2>
-        <DraggableList
-          v-if="currentTasks.length"
-          :class="$style.draggableList"
-          :list="currentTasks"
-          :disabled="disableDrag"
-          @orderedTasks="handleOrderedTasks"
-        >
-          <template #default="{ task }">
-            <Task
-              :class="$style.task"
-              :task="task"
-              :tags="tags"
-              :taskDateFormat="getFormat"
-              @setTaskCompleted="toggleTaskCompleted"
-              @deleteTask="deleteTask"
-              @editTask="editTask"
-            />
-          </template>
-        </DraggableList>
+      <div :class="$style.topWrapper" key="topWrapper">
+        <UpdatesPanel v-if="updates.available" :updates="updates" />
+        <Header
+          :selectedDate="selectedDate"
+          :colors="colors"
+          :taskedDays="taskedDays"
+          :tags="tags"
+          @saveColor="saveColor"
+          @selectedDate="setDate"
+          @selectedColor="setColor"
+          @exportTasks="handleExportTasks"
+        />
       </div>
-    </Slider>
+      <TaskGenerator
+        v-if="isInputAvailable"
+        :tags="tags"
+        @createTask="createTask"
+        key="taskGenerator"
+      />
+      <TaskHeader
+        v-if="hasTask"
+        :hasRemainingTask="hasRemainingTask"
+        :isToday="isToday"
+        :areTasksAllDone="areTasksAllDone"
+        :hasTask="hasTask"
+        @transferRemainingTasks="transferRemainingTasks"
+        @toggleAllCompleted="toggleAllCompleted"
+        key="taskHeader"
+      />
+      <Slider
+        @increment="handleIncrement"
+        @decrement="handleDecrement"
+        key="slider"
+      >
+        <div
+          v-for="(currentTasks, index) in sliderTasks"
+          :class="$style.taskList"
+          :key="index"
+        >
+          <h2 v-if="!currentTasks.length" :class="$style.emptyState">
+            There's no task
+          </h2>
+          <DraggableList
+            v-if="currentTasks.length"
+            :class="$style.draggableList"
+            :list="currentTasks"
+            :disabled="disableDrag"
+            @orderedTasks="handleOrderedTasks"
+          >
+            <template #default="{ task }">
+              <Task
+                :class="$style.task"
+                :task="task"
+                :tags="tags"
+                :taskDateFormat="getFormat"
+                @setTaskCompleted="toggleTaskCompleted"
+                @deleteTask="deleteTask"
+                @editTask="editTask"
+              />
+            </template>
+          </DraggableList>
+        </div>
+      </Slider>
+    </TransitionGroup>
     <Filters
       key="filters"
       :remaining="remainingTasksAmount"
@@ -86,7 +88,7 @@
       @statusByTodo="handleStatusTodo"
       @statusByCompleted="handleStatusCompleted"
     />
-  </TransitionGroup>
+  </div>
 </template>
 
 <script>
@@ -541,6 +543,7 @@ ul {
   height: 100%;
   min-height: 100vh;
   display: flex;
+  position: relative;
   flex-direction: column;
 }
 
@@ -595,16 +598,24 @@ ul {
 .slide-move {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
 .slide-enter,
 .slide-leave-to {
-  overflow: hidden;
   transform: translateY(-100%);
   opacity: 0;
 }
 
 .slide-leave-active {
   position: absolute;
+  top: 0;
+  overflow: hidden;
   left: 0;
   right: 0;
+}
+
+.transition {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
 }
 </style>

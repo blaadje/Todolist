@@ -28,6 +28,11 @@ export default {
       )
     }
 
+    const [prevElement, , nextElement] = this.$slots.default
+
+    prevElement.elm.style.height = '0px'
+    nextElement.elm.style.height = '0px'
+
     this.$slots.default.map(element => {
       const { offsetWidth } = this.$refs.wrapper
 

@@ -15,9 +15,12 @@ export default class month {
     return this.start.weekday()
   }
 
+  getRange() {
+    return moment.range(this.start, this.end)
+  }
+
   getDays() {
-    const range1 = moment.range(this.start, this.end)
-    return Array.from(range1.by('day', { exlusive: true }))
+    return Array.from(this.getRange().by('day', { exlusive: true }))
   }
 
   getFormatted() {
