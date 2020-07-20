@@ -1,11 +1,11 @@
 <template>
-  <div :class="$style.wrapper" ref="wrapper">
+  <div ref="wrapper" :class="$style.wrapper">
     <slot />
   </div>
 </template>
 
 <script>
-import { sleep } from '@core/utils'
+import sleep from '@core/utils'
 
 const UPDATE_LEFT = 'update-left'
 const UPDATE_RIGHT = 'update-right'
@@ -23,7 +23,7 @@ let oldDraggingPosition = 0
 export default {
   mounted() {
     if (this.$slots.default.length !== 3) {
-      throw new error(
+      throw new Error(
         'This component allows 3 children : previous, current, next',
       )
     }
@@ -33,11 +33,14 @@ export default {
     prevElement.elm.style.height = '0px'
     nextElement.elm.style.height = '0px'
 
-    this.$slots.default.map(element => {
+    this.$slots.default.forEach(element => {
       const { offsetWidth } = this.$refs.wrapper
 
+      // eslint-disable-next-line no-param-reassign
       element.elm.style.width = `${offsetWidth}px`
+      // eslint-disable-next-line no-param-reassign
       element.elm.style.flexShrink = '0'
+      // eslint-disable-next-line no-param-reassign
       element.elm.style.transform = `translateX(-${offsetWidth}px)`
     })
 
@@ -48,22 +51,19 @@ export default {
     this.$refs.wrapper.addEventListener('mousedown', this.addMouseMoveEvent)
     this.$refs.wrapper.addEventListener('mouseleave', this.removeMouseMoveEvent)
   },
+  destroyed() {
+    window.removeEventListener('resize', this.handleResize)
+  },
   methods: {
     removeMouseMoveEvent() {
       oldDraggingPosition = 0
-      this.$refs.wrapper &&
-        this.$refs.wrapper.removeEventListener('mousemove', this.updateElements)
+      this.$refs.wrapper.removeEventListener('mousemove', this.updateElements)
     },
     addMouseMoveEvent(event) {
-      const isClickOnDraggingHandler = event.path.some(item => {
-        if (
-          item.className &&
+      const isClickOnDraggingHandler = event.path.some(item =>  item.className &&
           item.className.baseVal &&
-          item.className.baseVal
-        ) {
-          return item.className.baseVal.includes('handle')
-        }
-      })
+          item.className.baseVal &&item.className.baseVal.includes('handle')
+      )
 
       if (isClickOnDraggingHandler) {
         return
@@ -72,7 +72,7 @@ export default {
       oldDraggingPosition = event.x
       this.$refs.wrapper.addEventListener('mousemove', this.updateElements)
     },
-    detectSwipe() {
+    detectSwipe(event) {
       const difference = event.deltaX - oldDelta
       const treshold = 3
 
@@ -99,9 +99,8 @@ export default {
       clearTimeout(time2)
 
       const elements = this.$slots.default
-      const wrapper = this.$refs.wrapper
+      const {wrapper} = this.$refs
       const { offsetWidth } = wrapper
-      const wrapperMiddlePosition = this.getMiddlePosition(wrapper)
       const start = wrapper.getBoundingClientRect().left
       const end = wrapper.getBoundingClientRect().right
       const scrollingElementMiddlePosition = this.getMiddlePosition(
@@ -112,12 +111,12 @@ export default {
         start,
         end,
       )
-      const isRight = scrollingElementMiddlePosition < wrapperMiddlePosition
 
       transform += movement
 
       if (state === UPDATE_CANCELLED) {
-        elements.map((element, index) => {
+        elements.forEach((element) => {
+          // eslint-disable-next-line no-param-reassign
           element.elm.style.transform = `translateX(${-offsetWidth -
             transform}px)`
         })
@@ -148,8 +147,10 @@ export default {
     handleResize() {
       const { offsetWidth } = this.$refs.wrapper
 
-      this.$slots.default.map(element => {
+      this.$slots.default.forEach(element => {
+        // eslint-disable-next-line no-param-reassign
         element.elm.style.width = `${offsetWidth}px`
+        // eslint-disable-next-line no-param-reassign
         element.elm.style.transform = `translateX(-${offsetWidth}px)`
       })
     },
@@ -157,19 +158,22 @@ export default {
       state,
       elements,
       offsetWidth,
-      wrapper,
     ) {
-      elements.map(element => {
+      elements.forEach(element => {
+        // eslint-disable-next-line no-param-reassign
         element.elm.style.transition = `transform ${ANIMATION_DURATION}ms ease-in-out`
 
         switch (state) {
           case UPDATE_LEFT:
+            // eslint-disable-next-line no-param-reassign
             element.elm.style.transform = `translateX(0)`
             break
           case UPDATE_RIGHT:
+            // eslint-disable-next-line no-param-reassign
             element.elm.style.transform = `translateX(-${offsetWidth * 2}px)`
             break
           case UPDATE_CANCELLED:
+            // eslint-disable-next-line no-param-reassign
             element.elm.style.transform = `translateX(-${offsetWidth}px)`
             break
           default:
@@ -179,8 +183,10 @@ export default {
 
       transform = 0
 
-      elements.map(element => {
+      elements.forEach(element => {
+        // eslint-disable-next-line no-param-reassign
         element.elm.style.transition = 'none'
+        // eslint-disable-next-line no-param-reassign
         element.elm.style.transform = `translateX(-${offsetWidth}px)`
       })
 
@@ -188,7 +194,7 @@ export default {
         return
       }
 
-      state === UPDATE_LEFT ? this.$emit('decrement') : this.$emit('increment')
+       this.$emit(state === UPDATE_LEFT ? 'decrement' : 'increment')
     },
     getMiddlePosition(element) {
       const middleWidth = element.offsetWidth / 2
@@ -211,10 +217,9 @@ export default {
       ) {
         return UPDATE_CANCELLED
       }
+
+      return null
     },
-  },
-  destroyed() {
-    window.removeEventListener('resize', this.handleResize)
   },
 }
 </script>

@@ -15,9 +15,10 @@
 </template>
 
 <script>
+import DownArrowIcon from '@assets/downArrow.svg'
+
 import Pellet from './Pellet'
 import TagList from './TagList'
-import DownArrowIcon from '@assets/downArrow.svg'
 
 export default {
   components: {

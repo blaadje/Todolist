@@ -4,9 +4,9 @@
       <DownloadIcon :class="$style.downloadIcon" />
       <div
         v-if="updatesPanelVisible"
+        v-click-outside="hideUpdatesPanel"
         :class="$style.updatesPanel"
         @click.stop
-        v-click-outside="hideUpdatesPanel"
       >
         <ProgressBar
           :class="$style.progressBar"
@@ -16,12 +16,12 @@
           <a
             v-if="updates.information"
             :class="$style.updateReleaseLink"
+            href="#"
             @click.prevent="
               handleClickReleaseLink(
                 `https://github.com/blaadje/Todo-list/releases/tag/${updates.information.releaseName}`,
               )
             "
-            href="#"
           >
             {{ updates.information && updates.information.version }}
           </a>
@@ -39,8 +39,11 @@
 </template>
 
 <script>
+
 import { ipcRenderer } from 'electron'
+
 import DownloadIcon from '@assets/download.svg'
+
 import Button from './Button'
 import ProgressBar from './ProgressBar'
 

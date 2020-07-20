@@ -1,6 +1,9 @@
 const path = require('path')
+
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin')
+
 const config = require('../webpack.base')
+
 const port = process.env.PORT || 8080
 const publicPath = `http://localhost:${port}/dist`
 
@@ -14,7 +17,7 @@ module.exports = smp.wrap({
     pathinfo: false,
   },
   target: 'electron-renderer',
-  devtool: 'cheap-module-eval-source-map',
+  devtool: 'eval-source-map',
   devServer: {
     port,
     publicPath,

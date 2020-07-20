@@ -1,6 +1,6 @@
 const path = require('path')
 
-let mainConfig = {
+const mainConfig = {
   mode: 'production',
   entry: {
     main: path.join(__dirname, '../../src/main.js'),

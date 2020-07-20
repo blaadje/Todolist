@@ -3,10 +3,10 @@
     <Pellet @click.native="$emit('selectedTag')" />
     <Pellet
       v-for="tag in tags"
+      :key="tag.id"
       :class="{
         [$style.selected]: selectedTags && selectedTags.includes(tag.id),
       }"
-      :key="tag.id"
       :background="tag.color"
       @click.native="$emit('selectedTag', tag.id)"
     />

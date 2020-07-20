@@ -1,14 +1,14 @@
 <template>
   <div
-    v-on="$listeners"
     :class="[
       $style.task,
       {
         [$style.editingText]: editingText,
       },
     ]"
+    v-on="$listeners"
   >
-    <div :class="$style.view" v-if="editingText === null">
+    <div v-if="editingText === null" :class="$style.view">
       <input
         :id="`toggle-${task.id}`"
         type="checkbox"
@@ -47,12 +47,13 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import moment from 'moment'
 
-import RunningTaskIcon from '@assets/runningTask.svg'
+import moment from 'moment'
+import Vue from 'vue'
+
 import CompletedTaskIcon from '@assets/completedTask.svg'
 import CrossIcon from '@assets/cross.svg'
+import RunningTaskIcon from '@assets/runningTask.svg'
 
 export default {
   directives: {

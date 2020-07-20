@@ -1,8 +1,8 @@
 <template>
   <Draggable
-    :dragClass="$style.drag"
-    :ghostClass="$style.ghost"
-    :chosenClass="$style.chosen"
+    :drag-class="$style.drag"
+    :ghost-class="$style.ghost"
+    :chosen-class="$style.chosen"
     :sort="false"
     handle=".handle"
   >
@@ -24,6 +24,7 @@
 
 <script>
 import Draggable from 'vuedraggable'
+
 import DragIcon from '@assets/drag.svg'
 
 export default {
@@ -101,7 +102,7 @@ export default {
       })
     },
     isDirectionUp(hoveringElement, y) {
-      const { top, bottom } = hoveringElement.getBoundingClientRect()
+      const { bottom } = hoveringElement.getBoundingClientRect()
       const middleHeight = hoveringElement.offsetHeight / 2
       const middlePosition = bottom - middleHeight
 
@@ -110,10 +111,11 @@ export default {
     dragStart(index) {
       this.draggingStartElementIndex = index
     },
-    dragEnd(index) {
-      this.$refs.draggingItem.forEach(
-        element => (element.style.boxShadow = 'none'),
-      )
+    dragEnd() {
+      this.$refs.draggingItem.forEach(element => {
+        // eslint-disable-next-line no-param-reassign
+        element.style.boxShadow = 'none'
+      })
       this.draggingStartElementIndex = null
     },
     dragOver({ y }, index) {

@@ -59,21 +59,21 @@
         <div ref="calendar" :class="$style.slidingElement">
           <Slider @increment="handleIncrement" @decrement="handleDecrement">
             <div
-              v-for="(month, index) in sliderMonths"
-              :class="$style.daysWrapper"
+              v-for="(sliderMonth, index) in sliderMonths"
               :key="index"
+              :class="$style.daysWrapper"
             >
               <div
-                v-for="(day, index) in previousMonthDays(month)"
+                v-for="day in previousMonthDays(sliderMonth)"
+                :key="`weekday${day}`"
                 :class="$style.spacer"
-                :key="`weekday${index}`"
                 :style="{ width: `${daySize}px`, height: `${daySize}px` }"
               >
                 {{ day.format('D') }}
               </div>
               <div
-                v-for="(day, index) in month.getDays()"
-                :key="`day${index}`"
+                v-for="day in month.getDays()"
+                :key="`day${day}`"
                 :class="[$style.day, { [$style.selected]: isSelected(day) }]"
                 :style="{ width: `${daySize}px`, height: `${daySize}px` }"
                 @click="selectDate(day)"
@@ -105,18 +105,14 @@
 <script>
 import moment from 'moment'
 
-import Month from '@core/month.js'
-import Next from '@assets/next.svg'
-import Previous from '@assets/previous.svg'
 import LeftArrowIcon from '@assets/leftArrow.svg'
+import Month from '@core/month.js'
 
 import Button from './Button'
 import Slider from './Slider'
 
 export default {
   components: {
-    Next,
-    Previous,
     Button,
     Slider,
     LeftArrowIcon,
@@ -144,9 +140,6 @@ export default {
       month: new Month(this.selectedDate.month(), this.selectedDate.year()),
     }
   },
-  mounted() {
-    this.setDaySize()
-  },
   computed: {
     shouldDisableToday() {
       return (
@@ -169,10 +162,13 @@ export default {
       this.month = new Month(value.month(), value.year())
     },
   },
+  mounted() {
+    this.setDaySize()
+  },
   methods: {
     previousMonthDays(currentMonth) {
       let month = currentMonth.month - 1
-      let year = currentMonth.year
+      let { year } = currentMonth
       if (month < 0) {
         year -= 1
         month = 11
@@ -188,7 +184,7 @@ export default {
         previousMonthDaysAmount,
         'days',
       )
-      const end = previousMonth.end
+      const { end } = previousMonth
 
       const range = moment.range(start, end)
 
@@ -251,7 +247,7 @@ export default {
     },
     setPrevMonth() {
       let month = this.month.month - 1
-      let year = this.month.year
+      let { year } = this.month
       if (month < 0) {
         year -= 1
         month = 11
@@ -261,7 +257,7 @@ export default {
     },
     setNextMonth() {
       let month = this.month.month + 1
-      let year = this.month.year
+      let { year } = this.month
       if (month > 11) {
         year += 1
         month = 0
@@ -271,10 +267,10 @@ export default {
     },
     getMonth() {
       let mm = this.month.month + 1
-      let yy = this.month.year
+      const yy = this.month.year
 
-      mm = mm < 10 ? '0' + mm : mm
-      return yy + '-' + mm
+      mm = mm < 10 ? `0${mm}` : mm
+      return `${yy}-${mm}`
     },
     isSelected(day) {
       return (

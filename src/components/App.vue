@@ -9,12 +9,12 @@
       :leave-to-class="$style['slide-leave-to']"
       :move-class="$style['slide-move']"
     >
-      <div :class="$style.topWrapper" key="topWrapper">
+      <div key="topWrapper" :class="$style.topWrapper">
         <UpdatesPanel v-if="updates.available" :updates="updates" />
         <Header
-          :selectedDate="selectedDate"
+          :selected-date="selectedDate"
           :colors="colors"
-          :taskedDays="taskedDays"
+          :tasked-days="taskedDays"
           :tags="tags"
           @saveColor="saveColor"
           @selectedDate="setDate"
@@ -24,28 +24,28 @@
       </div>
       <TaskGenerator
         v-if="isInputAvailable"
+        key="taskGenerator"
         :tags="tags"
         @createTask="createTask"
-        key="taskGenerator"
       />
       <TaskHeader
-        :hasRemainingTask="hasRemainingTask"
-        :isToday="isToday"
-        :areTasksAllDone="areTasksAllDone"
-        :hasTask="hasTask"
+        key="taskHeader"
+        :has-remaining-task="hasRemainingTask"
+        :is-today="isToday"
+        :are-tasks-all-done="areTasksAllDone"
+        :has-task="hasTask"
         @transferRemainingTasks="transferRemainingTasks"
         @toggleAllCompleted="toggleAllCompleted"
-        key="taskHeader"
       />
       <Slider
+        key="slider"
         @increment="handleIncrement"
         @decrement="handleDecrement"
-        key="slider"
       >
         <div
           v-for="(currentTasks, index) in sliderTasks"
-          :class="$style.taskList"
           :key="index"
+          :class="$style.taskList"
         >
           <h2 v-if="!currentTasks.length" :class="$style.emptyState">
             There's no task
@@ -62,7 +62,7 @@
                 :class="$style.task"
                 :task="task"
                 :tags="tags"
-                :taskDateFormat="getFormat"
+                :task-date-format="getFormat"
                 @setTaskCompleted="toggleTaskCompleted"
                 @deleteTask="deleteTask"
                 @editTask="editTask"
@@ -76,7 +76,7 @@
       key="filters"
       :remaining="remainingTasksAmount"
       :colors="colors"
-      :selectedTags="selectedTags"
+      :selected-tags="selectedTags"
       :tags="tags"
       :filter="filter"
       :status="status"
@@ -92,20 +92,20 @@
 
 <script>
 import { ipcRenderer, remote } from 'electron'
+
 import moment from 'moment'
 import ua from 'universal-analytics'
 
 import * as database from '@core/db/methods'
 
-import Header from './Header'
-import Button from './Button'
-import Filters from './Filters'
-import TaskHeader from './TaskHeader'
-import Task from './Task'
-import UpdatesPanel from './UpdatesPanel'
-import TaskGenerator from './TaskGenerator'
 import DraggableList from './DraggableList'
+import Filters from './Filters'
+import Header from './Header'
 import Slider from './Slider'
+import Task from './Task'
+import TaskGenerator from './TaskGenerator'
+import TaskHeader from './TaskHeader'
+import UpdatesPanel from './UpdatesPanel'
 
 const DATE = 'date'
 const ALL = 'all'
@@ -125,7 +125,6 @@ export default {
     Task,
     UpdatesPanel,
     DraggableList,
-    Button,
     Slider,
   },
   data() {
@@ -161,47 +160,6 @@ export default {
       filter: DATE,
       status: ALL,
     }
-  },
-  created() {
-    ipcRenderer.on('update-available', (event, { state, information }) => {
-      this.updates.available = state
-      this.updates.information = information
-    })
-    ipcRenderer.on('download-progress', (event, progressObj) => {
-      this.updates.progressObj = progressObj
-    })
-    ipcRenderer.on('update-downloaded', event => {
-      this.updates.downloaded = true
-    })
-  },
-  async beforeMount() {
-    const [tasks, userId] = await Promise.all([
-      database.getTasks(),
-      database.getUserId(),
-    ])
-    this.tasks = tasks
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((task, index) => {
-        if (task.orderIndex) {
-          return task
-        }
-
-        return {
-          ...task,
-          orderIndex: index,
-        }
-      })
-
-    if (!userId) {
-      const generateId = this.generateId()
-      this.user = ua(process.env.GOOGLE_ANALYTICS_ID, userId)
-      database.setUserId(generateId)
-      return
-    }
-    this.user = ua(process.env.GOOGLE_ANALYTICS_ID, userId)
-    this.user
-      .event(CATEGORY_SYSTEM, ACTION_VERSION, remote.app.getVersion())
-      .send()
   },
   computed: {
     disableDrag() {
@@ -243,7 +201,7 @@ export default {
       return this.currentDayTasks.filter(task => !task.completed).length
     },
     taskedDays() {
-      return this.tasks.reduce((acc, { date, completed }) => {
+      return this.tasks.reduce((acc, { date }) => {
         if (Object.keys(acc).some(item => item === date)) {
           return acc
         }
@@ -285,6 +243,47 @@ export default {
     sliderTasks() {
       return [this.previousDayTasks, this.currentDayTasks, this.nextDayTasks]
     },
+  },
+  created() {
+    ipcRenderer.on('update-available', (event, { state, information }) => {
+      this.updates.available = state
+      this.updates.information = information
+    })
+    ipcRenderer.on('download-progress', (event, progressObj) => {
+      this.updates.progressObj = progressObj
+    })
+    ipcRenderer.on('update-downloaded', () => {
+      this.updates.downloaded = true
+    })
+  },
+  async beforeMount() {
+    const [tasks, userId] = await Promise.all([
+      database.getTasks(),
+      database.getUserId(),
+    ])
+    this.tasks = tasks
+      .slice()
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((task, index) => {
+        if (task.orderIndex) {
+          return task
+        }
+
+        return {
+          ...task,
+          orderIndex: index,
+        }
+      })
+    const generateId = this.generateId()
+    const user = ua(process.env.GOOGLE_ANALYTICS_ID, userId || generateId)
+    
+    if (!userId) {
+      database.setUserId(generateId)
+    }
+
+    user.event(CATEGORY_SYSTEM, ACTION_VERSION, remote.app.getVersion()).send()
+
+    this.user = user
   },
   methods: {
     handleIncrement() {
@@ -397,9 +396,11 @@ export default {
       d += window.performance.now()
 
       return format.replace(/[xy]/g, c => {
+        // eslint-disable-next-line no-bitwise
         const r = (d + Math.random() * 16) % 16 | 0
         d = Math.floor(d / 16)
 
+        // eslint-disable-next-line no-bitwise
         return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
       })
     },
@@ -430,7 +431,7 @@ export default {
       }
       this.tasks = getCompletedTasks()
 
-      database.toggleAllTaskCompleted(selectedDate, this.areTasksAllDone)
+      database.toggleAllTaskCompleted(this.selectedDate, this.areTasksAllDone)
     },
     saveColor() {
       database.addColor(this.colors)
@@ -490,7 +491,7 @@ export default {
       this.tasks = this.tasks.map(task => {
         const editedTask = editedTasks.find(({ id }) => id === task.id) || false
 
-        return editedTask ? editedTask : task
+        return editedTask || task
       })
       this.user.event(CATEGORY_TASK, ACTION_EDIT).send()
       database.editTasks(editedTasks)
@@ -510,7 +511,8 @@ $duration: 0.5s;
 
 body,
 h1,
-h2 {
+h2,
+input {
   font-family: 'Nunito', sans-serif;
   background: white;
   padding: 0;
@@ -606,8 +608,8 @@ ul {
 
 .slide-leave-active {
   position: absolute;
-  top: 0;
   overflow: hidden;
+  top: 0;
   left: 0;
   right: 0;
 }

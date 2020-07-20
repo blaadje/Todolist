@@ -1,7 +1,7 @@
 <template>
   <div
-    :class="[$style.wrapper, { [$style.isVisible]: isVisible }]"
     v-click-outside="hideFilters"
+    :class="[$style.wrapper, { [$style.isVisible]: isVisible }]"
   >
     <div
       :class="[$style.toggleVisibilityPanel, { [$style.isVisible]: isVisible }]"
@@ -18,7 +18,7 @@
           <TagList
             :class="$style.tagsWrapper"
             :tags="tags"
-            :selectedTags="selectedTags"
+            :selected-tags="selectedTags"
             @selectedTag="tagId => $emit('filterByTag', tagId)"
           />
           <div :class="$style.filterWrapper">
@@ -70,6 +70,7 @@
 
 <script>
 import LeftArrowIcon from '../assets/leftArrow.svg'
+
 import TagList from './TagList'
 
 export default {
@@ -118,22 +119,22 @@ export default {
     buttonsStatus(element) {
       if (this.status === element) {
         return {
-          border: '1px solid' + this.colors.hex,
+          border: `1px solid${  this.colors.hex}`,
           color: this.colors.hex,
         }
-      } else {
+      } 
         return 'border: 1px solid #c2c2c2'
-      }
+      
     },
     buttonsFilter(element) {
       if (this.filter === element) {
         return {
-          border: '1px solid' + this.colors.hex,
+          border: `1px solid${  this.colors.hex}`,
           color: this.colors.hex,
         }
-      } else {
+      } 
         return 'border: 1px solid #c2c2c2'
-      }
+      
     },
   },
 }

@@ -1,20 +1,19 @@
 name: Deploy
 
-on:
-  deployment
+on: deployment
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: 'deployment pending'
-      uses: 'deliverybot/deployment-status@v1'
-      with:
-        state: 'pending'
-        token: '${{ github.token }}'
-    - uses: blaadje/github-package-version-bumper@master
-      with:
-        github-token: ${{ secrets.github_token }}
+      - name: 'deployment pending'
+        uses: 'deliverybot/deployment-status@v1'
+        with:
+          state: 'pending'
+          token: '${{ github.token }}'
+      - uses: blaadje/github-package-version-bumper@master
+        with:
+          github-token: ${{ secrets.github_token }}
 
   deploy:
     needs: [build]
@@ -39,7 +38,6 @@ jobs:
           git checkout origin/master -- package.json;
           fi;
 
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -63,6 +61,16 @@ jobs:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
           release: true
+
+      - uses: tclindner/sentry-releases-action@v1.2.0
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: alexandrecharlot
+          SENTRY_PROJECT: todolist
+        with:
+          tagName: ${{ github.ref }}
+          environment: production
+          sourceMapOptions: '{"include": ["dist"]}'
 
       - name: 'deployment success'
         if: success()

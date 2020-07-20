@@ -1,10 +1,11 @@
-const Dotenv = require('dotenv-webpack')
-const SentryWebpackPlugin = require('@sentry/webpack-plugin')
 const path = require('path')
+
+const Dotenv = require('dotenv-webpack')
+
 const { dependencies } = require('../../package.json')
 const config = require('../webpack.base')
 
-let rendererConfig = {
+const rendererConfig = {
   ...config,
   mode: 'production',
   plugins: [
@@ -12,16 +13,11 @@ let rendererConfig = {
     new Dotenv({
       systemvars: true,
     }),
-    new SentryWebpackPlugin({
-      include: '.',
-      ignoreFile: '.sentrycliignore',
-      ignore: ['node_modules', 'webpack.config.js'],
-      configFile: 'sentry.properties',
-    }),
   ],
   entry: {
     renderer: path.join(__dirname, '../../src/index.js'),
   },
+  devtool: 'hidden-source-map',
   externals: [...Object.keys(dependencies || {})],
   node: {
     __dirname: false,

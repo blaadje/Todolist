@@ -1,7 +1,8 @@
 import { remote } from 'electron'
+import path from 'path'
+
 import low from 'lowdb'
 import FileSync from 'lowdb/adapters/FileSync'
-import path from 'path'
 
 const adapter = new FileSync(
   path.join(remote.app.getPath('userData'), '/data.json'),

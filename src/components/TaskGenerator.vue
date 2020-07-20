@@ -16,14 +16,10 @@
 </template>
 
 <script>
-import Pellet from './Pellet'
-import TagList from './TagList'
 import TagSelector from './TagSelector'
 
 export default {
   components: {
-    Pellet,
-    TagList,
     TagSelector,
   },
   props: {

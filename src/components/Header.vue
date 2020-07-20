@@ -20,8 +20,8 @@
       </div>
       <DatePicker
         v-if="datePickerVisible"
-        :class="$style.datePicker"
         v-click-outside="hideDatePicker"
+        :class="$style.datePicker"
         :colors="colors"
         :selected-date="selectedDate"
         :tasked-days="taskedDays"
@@ -45,15 +45,15 @@
 </template>
 
 <script>
-import moment from 'moment'
 import { Sketch } from 'vue-color'
 
-import ColorPickerIcon from '@assets/color-picker.svg'
-import ClipboardIcon from '@assets/clipboard.svg'
 import CheckIcon from '@assets/check.svg'
+import ClipboardIcon from '@assets/clipboard.svg'
+import ColorPickerIcon from '@assets/color-picker.svg'
 
-import DatePicker from './DatePicker'
+
 import Button from './Button'
+import DatePicker from './DatePicker'
 
 export default {
   components: {

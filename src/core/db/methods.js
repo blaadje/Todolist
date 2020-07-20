@@ -1,4 +1,5 @@
 import moment from 'moment'
+
 import db from './datastore'
 
 const getColor = () => db.getState().color
@@ -19,6 +20,7 @@ const setRemainingTasksToday = () =>
         moment(date).unix() < moment().unix() && !completed,
     )
     .each(task => {
+      // eslint-disable-next-line no-param-reassign
       task.date = moment()
     })
     .write()
@@ -64,6 +66,7 @@ const editTasks = editedTasks => {
       }
 
       Object.keys(editedTask).forEach(key => {
+        // eslint-disable-next-line no-param-reassign
         task[key] = editedTask[key]
       })
     })
@@ -74,6 +77,7 @@ const toggleAllTaskCompleted = (selectedDate, allDone) => {
   if (!selectedDate) {
     db.get('todos')
       .each(task => {
+        // eslint-disable-next-line no-param-reassign
         task.completed = allDone
       })
       .write()
@@ -86,6 +90,7 @@ const toggleAllTaskCompleted = (selectedDate, allDone) => {
         moment(date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD'),
     )
     .each(todo => {
+      // eslint-disable-next-line no-param-reassign
       todo.completed = allDone
     })
     .write()

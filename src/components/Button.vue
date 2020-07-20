@@ -1,13 +1,13 @@
 <template>
   <button
     :class="[$style.wrapper, { [$style.disabled]: disabled }]"
-    v-on="$listeners"
     :style="{
       background: filled ? color : 'none',
       color: filled ? 'white' : color,
       border: filled ? '' : `1px solid ${color}`,
     }"
     :disabled="disabled"
+    v-on="$listeners"
   >
     <slot />
   </button>

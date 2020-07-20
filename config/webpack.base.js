@@ -1,6 +1,7 @@
 const path = require('path')
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   resolve: {
@@ -8,9 +9,9 @@ module.exports = {
     cacheWithContext: false,
     extensions: ['.vue', '.js'],
     alias: {
-      ['@assets']: path.resolve(__dirname, '../src/assets/'),
-      ['@components']: path.resolve(__dirname, '../src/components'),
-      ['@core']: path.resolve(__dirname, '../src/core'),
+      '@assets': path.resolve(__dirname, '../src/assets/'),
+      '@components': path.resolve(__dirname, '../src/components'),
+      '@core': path.resolve(__dirname, '../src/core'),
     },
   },
   plugins: [
