@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import sleep from '@core/utils'
+import { sleep } from '@core/utils'
 
 const UPDATE_LEFT = 'update-left'
 const UPDATE_RIGHT = 'update-right'
@@ -60,9 +60,12 @@ export default {
       this.$refs.wrapper.removeEventListener('mousemove', this.updateElements)
     },
     addMouseMoveEvent(event) {
-      const isClickOnDraggingHandler = event.path.some(item =>  item.className &&
+      const isClickOnDraggingHandler = event.path.some(
+        item =>
+          item.className &&
           item.className.baseVal &&
-          item.className.baseVal &&item.className.baseVal.includes('handle')
+          item.className.baseVal &&
+          item.className.baseVal.includes('handle'),
       )
 
       if (isClickOnDraggingHandler) {
@@ -99,7 +102,7 @@ export default {
       clearTimeout(time2)
 
       const elements = this.$slots.default
-      const {wrapper} = this.$refs
+      const { wrapper } = this.$refs
       const { offsetWidth } = wrapper
       const start = wrapper.getBoundingClientRect().left
       const end = wrapper.getBoundingClientRect().right
@@ -115,7 +118,7 @@ export default {
       transform += movement
 
       if (state === UPDATE_CANCELLED) {
-        elements.forEach((element) => {
+        elements.forEach(element => {
           // eslint-disable-next-line no-param-reassign
           element.elm.style.transform = `translateX(${-offsetWidth -
             transform}px)`
@@ -154,11 +157,7 @@ export default {
         element.elm.style.transform = `translateX(-${offsetWidth}px)`
       })
     },
-    async translateElementToFuturePosition(
-      state,
-      elements,
-      offsetWidth,
-    ) {
+    async translateElementToFuturePosition(state, elements, offsetWidth) {
       elements.forEach(element => {
         // eslint-disable-next-line no-param-reassign
         element.elm.style.transition = `transform ${ANIMATION_DURATION}ms ease-in-out`
@@ -194,7 +193,7 @@ export default {
         return
       }
 
-       this.$emit(state === UPDATE_LEFT ? 'decrement' : 'increment')
+      this.$emit(state === UPDATE_LEFT ? 'decrement' : 'increment')
     },
     getMiddlePosition(element) {
       const middleWidth = element.offsetWidth / 2

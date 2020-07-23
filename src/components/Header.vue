@@ -2,7 +2,7 @@
   <header :class="$style.wrapper" :style="{ background: colors.hex }">
     <div :class="$style.menu">
       <span :class="$style.dateFormatted" @click="datePickerVisible = true">
-        {{ selectedDate.format('YYYY-MM-DD') }}
+        {{ formattedSelectedDate }}
       </span>
       <div :class="$style.icons">
         <ColorPickerIcon :class="$style.icon" @click="sketchVisible = true" />
@@ -18,16 +18,18 @@
           />
         </div>
       </div>
-      <DatePicker
-        v-if="datePickerVisible"
-        v-click-outside="hideDatePicker"
-        :class="$style.datePicker"
-        :colors="colors"
-        :selected-date="selectedDate"
-        :tasked-days="taskedDays"
-        @close="datePickerVisible = false"
-        @selectedDate="handleSelectedDate"
-      />
+      <keep-alive>
+        <DatePicker
+          v-if="datePickerVisible"
+          v-click-outside="hideDatePicker"
+          :class="$style.datePicker"
+          :colors="colors"
+          :selected-date="selectedDate"
+          :tasked-days="taskedDays"
+          @close="datePickerVisible = false"
+          @selectedDate="handleSelectedDate"
+        />
+      </keep-alive>
     </div>
     <Transition name="slideUp">
       <div
@@ -50,7 +52,7 @@ import { Sketch } from 'vue-color'
 import CheckIcon from '@assets/check.svg'
 import ClipboardIcon from '@assets/clipboard.svg'
 import ColorPickerIcon from '@assets/color-picker.svg'
-
+import { formatDate } from '@core/utils'
 
 import Button from './Button'
 import DatePicker from './DatePicker'
@@ -74,7 +76,7 @@ export default {
       required: true,
     },
     selectedDate: {
-      type: Object,
+      type: Date,
       required: true,
     },
     taskedDays: {
@@ -89,6 +91,15 @@ export default {
       isExported: false,
       timeout: null,
     }
+  },
+  computed: {
+    formattedSelectedDate() {
+      return formatDate(this.selectedDate, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      })
+    },
   },
   methods: {
     hideSketchPicker() {
@@ -107,14 +118,14 @@ export default {
       }, 2000)
     },
     handleSketch(color) {
-      return this.$emit('selectedColor', color)
+      return this.$emit('setSelectedColor', color)
     },
     handleColorSave() {
       this.sketchVisible = false
       this.$emit('saveColor')
     },
     handleSelectedDate(date) {
-      return this.$emit('selectedDate', date)
+      return this.$emit('setSelectedDate', date)
     },
   },
 }
@@ -200,6 +211,7 @@ export default {
   font-size: 1.7em;
   font-weight: 100;
   color: white;
+  user-select: none;
 }
 
 .checkIconWrapper {

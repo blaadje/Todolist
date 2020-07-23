@@ -1,4 +1,4 @@
-import moment from 'moment'
+import { getTimeStampFromDate, areDatesEqual } from '../utils'
 
 import db from './datastore'
 
@@ -17,11 +17,12 @@ const setRemainingTasksToday = () =>
     .get('todos')
     .filter(
       ({ completed, date }) =>
-        moment(date).unix() < moment().unix() && !completed,
+        getTimeStampFromDate(new Date(date)) <
+          getTimeStampFromDate(new Date()) && !completed,
     )
     .each(task => {
       // eslint-disable-next-line no-param-reassign
-      task.date = moment()
+      task.date = new Date()
     })
     .write()
 
@@ -85,10 +86,7 @@ const toggleAllTaskCompleted = (selectedDate, allDone) => {
   }
 
   db.get('todos')
-    .filter(
-      ({ date }) =>
-        moment(date).format('YYYY-MM-DD') === selectedDate.format('YYYY-MM-DD'),
-    )
+    .filter(({ date }) => areDatesEqual(new Date(date), selectedDate))
     .each(todo => {
       // eslint-disable-next-line no-param-reassign
       todo.completed = allDone

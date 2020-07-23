@@ -19,7 +19,7 @@ module.exports = smp.wrap({
   },
   plugins: [...config.plugins, new ProgressBarPlugin()],
   target: 'electron-renderer',
-  devtool: 'eval-source-map',
+  devtool: 'eval-cheap-source-map',
   devServer: {
     port,
     publicPath,

@@ -17,8 +17,8 @@
           :tasked-days="taskedDays"
           :tags="tags"
           @saveColor="saveColor"
-          @selectedDate="setDate"
-          @selectedColor="setColor"
+          @setSelectedDate="setDate"
+          @setSelectedColor="setColor"
           @exportTasks="handleExportTasks"
         />
       </div>
@@ -93,10 +93,17 @@
 <script>
 import { ipcRenderer, remote } from 'electron'
 
-import moment from 'moment'
 import ua from 'universal-analytics'
 
 import * as database from '@core/db/methods'
+import {
+  formatDate,
+  areDatesEqual,
+  decrementDay,
+  incrementDay,
+  getTimeStampFromDate,
+  isToday,
+} from '@core/utils'
 
 import DraggableList from './DraggableList'
 import Filters from './Filters'
@@ -154,14 +161,19 @@ export default {
         { color: '#D289E2', id: 6, name: null },
         { color: '#A5A5A7', id: 7, name: null },
       ],
-      selectedDate: moment(),
-      slidingDirection: 'left',
+      selectedDate: new Date(),
       selectedTags: [],
       filter: DATE,
       status: ALL,
     }
   },
   computed: {
+    isToday() {
+      return isToday(this.selectedDate)
+    },
+    today() {
+      return new Date(new Date().setHours(0, 0, 0))
+    },
     disableDrag() {
       return (
         this.filter === ALL ||
@@ -171,7 +183,8 @@ export default {
     },
     isInputAvailable() {
       return (
-        this.selectedDate.format('YYYY-MM-DD') >= moment().format('YYYY-MM-DD')
+        getTimeStampFromDate(this.selectedDate) >=
+        getTimeStampFromDate(this.today)
       )
     },
     hasTask() {
@@ -181,21 +194,17 @@ export default {
       return this.filter !== ALL && this.selectedDate
     },
     getFormat() {
-      return this.selectedDateView ? 'h:mm:ss a' : 'YYYY-MM-DD'
-    },
-    isToday() {
-      return (
-        this.selectedDate.format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')
-      )
+      return this.selectedDateView
+        ? { hour: 'numeric', minute: 'numeric', second: 'numeric' }
+        : { day: 'numeric', month: 'numeric', year: 'numeric' }
     },
     hasRemainingTask() {
-      return (
-        this.tasks.filter(
-          task =>
-            moment(task.date).format('YYYY-MM-DD') <
-              moment().format('YYYY-MM-DD') && !task.completed,
-        ).length >= 1
-      )
+      return this.tasks.some(task => {
+        return (
+          formatDate(new Date(task.date)) < formatDate(this.today) &&
+          !task.completed
+        )
+      })
     },
     remainingTasksAmount() {
       return this.currentDayTasks.filter(task => !task.completed).length
@@ -212,7 +221,7 @@ export default {
 
         return {
           ...acc,
-          [moment(date).format('YYYY-MM-DD')]: { completed: hasCompleted },
+          [formatDate(new Date(date))]: { completed: hasCompleted },
         }
       }, {})
     },
@@ -223,7 +232,7 @@ export default {
       return this.getFilteredTasks(
         this.getTasksByDate(
           this.getSortedTasks(this.tasks),
-          moment(this.selectedDate).subtract(1, 'day'),
+          decrementDay(this.selectedDate),
         ),
       )
     },
@@ -236,7 +245,7 @@ export default {
       return this.getFilteredTasks(
         this.getTasksByDate(
           this.getSortedTasks(this.tasks),
-          moment(this.selectedDate).add(1, 'day'),
+          incrementDay(this.selectedDate),
         ),
       )
     },
@@ -287,10 +296,10 @@ export default {
   },
   methods: {
     handleIncrement() {
-      this.selectedDate = moment(this.selectedDate).add(1, 'day')
+      this.selectedDate = incrementDay(this.selectedDate)
     },
     handleDecrement() {
-      this.selectedDate = moment(this.selectedDate).subtract(1, 'day')
+      this.selectedDate = decrementDay(this.selectedDate)
     },
     getFilteredTasks(tasks) {
       const filteredTasks = tasks.filter(task =>
@@ -315,9 +324,7 @@ export default {
     },
     getTasksByDate(tasks, date = this.selectedDate) {
       return tasks.filter(task =>
-        this.filter === DATE
-          ? moment(task.date).format('YYYY-MM-DD') === date.format('YYYY-MM-DD')
-          : true,
+        this.filter === DATE ? areDatesEqual(new Date(task.date), date) : true,
       )
     },
     handleExportTasks() {
@@ -326,7 +333,8 @@ export default {
         ${this.currentDayTasks.map(({ completed, name, date }) => {
           const completedStatus = completed ? 'x' : ' '
 
-          return `- [${completedStatus}] ${name} - ${moment(date).format(
+          return `- [${completedStatus}] ${name} - ${formatDate(
+            new Date(date),
             this.getFormat,
           )}\n`
         })}`
@@ -348,13 +356,17 @@ export default {
     },
     transferRemainingTasks() {
       this.tasks = this.tasks.map(task => {
-        if (moment(task.date).unix() >= moment().unix() || task.completed) {
+        if (
+          getTimeStampFromDate(new Date(task.date)) >=
+            getTimeStampFromDate(this.today) ||
+          task.completed
+        ) {
           return task
         }
 
         return {
           ...task,
-          date: moment(),
+          date: new Date(),
         }
       })
 
@@ -391,7 +403,7 @@ export default {
       this.status = 'completed'
     },
     generateId(format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx') {
-      let d = moment().unix()
+      let d = getTimeStampFromDate(new Date())
 
       d += window.performance.now()
 
@@ -416,10 +428,7 @@ export default {
         }
 
         return this.tasks.map(task => {
-          if (
-            moment(task.date).format('YYYY-MM-DD') !==
-            this.selectedDate.format('YYYY-MM-DD')
-          ) {
+          if (!areDatesEqual(new Date(task.date), this.selectedDate)) {
             return task
           }
 
@@ -437,9 +446,6 @@ export default {
       database.addColor(this.colors)
     },
     setDate(date) {
-      this.slidingDirection =
-        date > moment(this.selectedDate) ? 'right' : 'left'
-      this.datePickerVisible = false
       this.selectedDate = date
     },
     setColor(color) {
@@ -448,6 +454,7 @@ export default {
     createTask(newTask, tagId) {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
       const date = this.selectedDate
+
       const higherTaskIndex =
         (this.currentDayTasks.length && this.currentDayTasks[0].orderIndex) || 0
 
@@ -455,7 +462,7 @@ export default {
         name: newTask,
         date,
         orderIndex: higherTaskIndex + 1,
-        id: `${this.generateId('xxxxxx')}${moment(date).unix()}`,
+        id: `${this.generateId('xxxxxx')}${getTimeStampFromDate(new Date())}`,
         tagId,
         completed: false,
       }

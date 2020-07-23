@@ -22,7 +22,7 @@
       </label>
       <div :class="$style.textWrapper" @dblclick="editingTaskName">
         <span :class="$style.date">
-          {{ moment(task.date).format(taskDateFormat) }}
+          {{ formattedTaskDate }}
         </span>
         <label :class="[$style.label, { [$style.completed]: task.completed }]">
           {{ task.name }}
@@ -47,13 +47,12 @@
 </template>
 
 <script>
-
-import moment from 'moment'
 import Vue from 'vue'
 
 import CompletedTaskIcon from '@assets/completedTask.svg'
 import CrossIcon from '@assets/cross.svg'
 import RunningTaskIcon from '@assets/runningTask.svg'
+import { formatDate } from '@core/utils'
 
 export default {
   directives: {
@@ -72,7 +71,7 @@ export default {
   },
   props: {
     taskDateFormat: {
-      type: String,
+      type: Object,
       required: true,
     },
     task: {
@@ -90,7 +89,9 @@ export default {
     }
   },
   computed: {
-    moment: () => moment,
+    formattedTaskDate() {
+      return formatDate(new Date(this.task.date), this.taskDateFormat)
+    },
     getTagColor() {
       const tags = this.tags.find(({ id }) => id === this.task.tagId)
 
