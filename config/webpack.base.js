@@ -20,6 +20,17 @@ module.exports = {
       template: path.resolve(__dirname, '../src/index.html'),
     }),
   ],
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'initial',
+        },
+      },
+    },
+  },
   module: {
     rules: [
       {

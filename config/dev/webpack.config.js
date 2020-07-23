@@ -1,5 +1,6 @@
 const path = require('path')
 
+const ProgressBarPlugin = require('progress-bar-webpack-plugin')
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin')
 
 const config = require('../webpack.base')
@@ -16,14 +17,14 @@ module.exports = smp.wrap({
     filename: 'index.js',
     pathinfo: false,
   },
+  plugins: [...config.plugins, new ProgressBarPlugin()],
   target: 'electron-renderer',
   devtool: 'eval-source-map',
   devServer: {
     port,
     publicPath,
     compress: true,
-    clientLogLevel: 'silent',
-    noInfo: false,
+    noInfo: true,
     overlay: true,
     stats: 'minimal',
     http2: false,
