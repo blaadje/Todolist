@@ -139,6 +139,8 @@ export default {
   padding: 0.5em;
   width: 100%;
   color: #757575;
+  border-radius: 0.2rem;
+  border: 1px solid #ededed;
   font-weight: 100;
   font-size: 1.2em;
   display: block;
@@ -166,7 +168,7 @@ export default {
 .date {
   color: #c2c2c2;
   display: block;
-  margin: 0.3em 0;
+  margin: 0.8rem 0;
 }
 
 .label {

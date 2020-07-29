@@ -160,6 +160,7 @@ export default {
 .year {
   display: block;
   opacity: 0.7;
+  margin-bottom: 0.6rem;
 }
 
 .date {

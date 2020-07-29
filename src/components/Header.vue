@@ -1,36 +1,55 @@
 <template>
   <header :class="$style.wrapper" :style="{ background: colors.hex }">
-    <div :class="$style.menu">
-      <span :class="$style.dateFormatted" @click="datePickerVisible = true">
-        {{ formattedSelectedDate }}
-      </span>
-      <div :class="$style.icons">
-        <ColorPickerIcon :class="$style.icon" @click="sketchVisible = true" />
-        <ClipboardIcon
-          v-if="!isExported"
-          :class="$style.icon"
-          @click="handleExportTask"
-        />
-        <div v-if="isExported" :class="$style.checkIconWrapper">
-          <CheckIcon
-            :class="[$style.icon, $style.checkIcon]"
+    <Tooltip>
+      <template #trigger>
+        <span :class="$style.dateFormatted" @click="datePickerVisible = true">
+          {{ formattedSelectedDate }}
+        </span>
+      </template>
+      <template #content>
+        <span>Calendar</span>
+      </template>
+    </Tooltip>
+    <div :class="$style.icons">
+      <Tooltip>
+        <template #trigger>
+          <ColorPickerIcon :class="$style.icon" @click="sketchVisible = true" />
+        </template>
+        <template #content>
+          <span>Color picker</span>
+        </template>
+      </Tooltip>
+      <Tooltip :disabled="isExported">
+        <template #trigger>
+          <ClipboardIcon
+            v-if="!isExported"
+            :class="$style.icon"
             @click="handleExportTask"
           />
-        </div>
-      </div>
-      <keep-alive>
-        <DatePicker
-          v-if="datePickerVisible"
-          v-click-outside="hideDatePicker"
-          :class="$style.datePicker"
-          :colors="colors"
-          :selected-date="selectedDate"
-          :tasked-days="taskedDays"
-          @close="datePickerVisible = false"
-          @selectedDate="handleSelectedDate"
-        />
-      </keep-alive>
+          <div v-if="isExported" :class="$style.checkIconWrapper">
+            <CheckIcon
+              :class="[$style.icon, $style.checkIcon]"
+              @click="handleExportTask"
+            />
+          </div>
+        </template>
+        <template #content>
+          <span>Export tasks</span>
+        </template>
+      </Tooltip>
     </div>
+    <keep-alive>
+      <DatePicker
+        v-if="datePickerVisible"
+        v-click-outside="hideDatePicker"
+        :class="$style.datePicker"
+        :colors="colors"
+        :selected-date="selectedDate"
+        :tasked-days="taskedDays"
+        @close="datePickerVisible = false"
+        @selectedDate="handleSelectedDate"
+      />
+    </keep-alive>
     <Transition name="slideUp">
       <div
         v-if="sketchVisible"
@@ -56,6 +75,7 @@ import { formatDate } from '@core/utils'
 
 import Button from './Button'
 import DatePicker from './DatePicker'
+import Tooltip from './Tooltip'
 
 export default {
   components: {
@@ -65,6 +85,7 @@ export default {
     ClipboardIcon,
     CheckIcon,
     Button,
+    Tooltip,
   },
   props: {
     tags: {
@@ -132,12 +153,24 @@ export default {
 </script>
 
 <style lang="scss" module>
+$height: 115px;
+
 .wrapper {
   width: 100%;
-  margin: 0;
-  padding: 0;
+  height: $height;
+  position: relative;
+  padding: 2.5em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 4;
   -webkit-app-region: drag;
+}
+
+.wrapper:before {
+  content: '';
+  width: 100%;
+  flex: 5;
 }
 
 .icons {
@@ -169,6 +202,7 @@ export default {
   padding: 1rem;
   left: 0;
   display: flex;
+  top: $height;
   flex-direction: column;
   align-items: center;
   right: 0;
@@ -187,20 +221,6 @@ export default {
 
 .icon:hover {
   transform: scale(1.1) rotate(2deg);
-}
-
-.menu {
-  position: relative;
-  padding: 2.5em 1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu:before {
-  content: '';
-  width: 100%;
-  flex: 5;
 }
 
 .dateFormatted {
@@ -222,11 +242,12 @@ export default {
   white-space: nowrap;
   content: 'Copied in clipboard!';
   padding: 0.3rem 0.6rem;
-  color: #757575;
-  background: white;
+  color: white;
+  font-size: 0.8rem;
+  background: rgba(#2ec685, 0.7);
   border-radius: 0.2rem;
   position: absolute;
-  top: calc(100% + 5px);
+  top: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
 }
@@ -239,7 +260,7 @@ export default {
 .datePicker {
   position: absolute;
   left: 0;
-  top: 133px;
+  top: $height + 17px;
   right: 0;
   width: 392px;
   margin: auto;

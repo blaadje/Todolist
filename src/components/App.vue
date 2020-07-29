@@ -524,6 +524,7 @@ input {
   background: white;
   padding: 0;
   margin: 0;
+  line-height: 100%;
 }
 
 * {
