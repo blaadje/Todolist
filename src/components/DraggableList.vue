@@ -11,10 +11,10 @@
       ref="draggingItem"
       :key="index"
       :class="$style.taskWrapper"
-      @drop="event => drop(event, index)"
+      @drop="(event) => drop(event, index)"
       @dragstart="dragStart(index)"
       @dragend="dragEnd(index)"
-      @dragover="event => dragOver(event, index)"
+      @dragover="(event) => dragOver(event, index)"
     >
       <DragIcon v-if="!disabled" class="handle" :class="$style.dragIcon" />
       <slot :task="item" />

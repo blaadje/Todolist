@@ -25,6 +25,13 @@
         Transfer remaining tasks
       </span>
     </div>
+    <SortSelector
+      v-if="hasTask"
+      :class="$style.sortSelector"
+      :active-sort="activeSort"
+      :sort-by="sortBy"
+      @sortBy="(value) => $emit('sortBy', value)"
+    />
   </div>
 </template>
 
@@ -32,12 +39,23 @@
 import AllCompletedIcon from '@assets/allcompleted.svg'
 import TransferTodayIcon from '@assets/transferToday.svg'
 
+import SortSelector from './SortSelector'
+
 export default {
   components: {
     AllCompletedIcon,
     TransferTodayIcon,
+    SortSelector,
   },
   props: {
+    activeSort: {
+      type: Object,
+      required: true,
+    },
+    sortBy: {
+      type: Array,
+      required: true,
+    },
     isToday: {
       type: Boolean,
       required: true,
@@ -63,11 +81,12 @@ export default {
   display: flex;
   z-index: 1;
   position: relative;
+  padding: 1.5rem;
 }
 
 .transferRemainingWrapper {
   display: flex;
-  padding: 1.5rem;
+  margin-left: 1.5rem;
   align-items: center;
   cursor: pointer;
 }
@@ -79,6 +98,7 @@ export default {
   position: relative;
   height: 40px;
   width: 40px;
+  flex-shrink: 0;
 }
 
 .transferTodayIcon {
@@ -94,7 +114,6 @@ export default {
 .allCompletedWrapper {
   display: flex;
   cursor: pointer;
-  padding: 1.5rem;
   align-items: center;
   position: relative;
 
@@ -120,5 +139,11 @@ export default {
   margin-left: 15px;
   font-weight: 100;
   color: grey;
+}
+
+.sortSelector {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
 }
 </style>

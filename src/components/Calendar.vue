@@ -144,20 +144,24 @@ export default {
     },
   },
   watch: {
-    selectedDate(value) {
-      this.$emit('isTodayDisabled', isToday(value))
-      this.localSelectedDate = value
-      this.previewDate = value
+    selectedDate(newValue, prevValue) {
+      this.localSelectedDate = newValue
+      this.previewDate = newValue
+
+      if (newValue.getMonth() !== prevValue.getMonth()) {
+        return
+      }
+
+      this.$emit('isTodayDisabled', isToday(newValue))
     },
     previewDate(newPreviewDate, oldPreviewDate) {
       if (newPreviewDate.getMonth() === oldPreviewDate.getMonth()) {
         return
       }
 
-      this.$emit(
-        'isTodayDisabled',
-        this.selectedDate.getMonth() + 1 === this.getMonth,
-      )
+      const currentMonth = new Date().getMonth()
+
+      this.$emit('isTodayDisabled', currentMonth === newPreviewDate.getMonth())
     },
   },
   mounted() {

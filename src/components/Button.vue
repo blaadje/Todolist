@@ -43,6 +43,7 @@ export default {
   font-size: 0.8rem;
   cursor: pointer;
   margin-left: auto;
+  outline: none;
 }
 
 .disabled {

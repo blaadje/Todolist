@@ -31,10 +31,13 @@
       <TaskHeader
         key="taskHeader"
         :has-remaining-task="hasRemainingTask"
+        :active-sort="activeSort"
+        :sort-by="sortBy"
         :is-today="isToday"
         :are-tasks-all-done="areTasksAllDone"
         :has-task="hasTask"
         @transferRemainingTasks="transferRemainingTasks"
+        @sortBy="handleSortBy"
         @toggleAllCompleted="toggleAllCompleted"
       />
       <Slider
@@ -152,6 +155,13 @@ export default {
           b: 238,
         },
       },
+      sortBy: [
+        { label: 'Priority', value: 'orderIndex' },
+        { label: 'Name', value: 'name' },
+        { label: 'Ascending date', value: 'date_asc' },
+        { label: 'Descending date', value: 'date_desc' },
+      ],
+      activeSort: { label: 'Priority', value: 'orderIndex' },
       tags: [
         { color: '#FF675D', id: 1, name: null },
         { color: '#F9A74D', id: 2, name: null },
@@ -168,6 +178,9 @@ export default {
     }
   },
   computed: {
+    isManualPriorization() {
+      return this.activeSort.value === 'orderIndex'
+    },
     isToday() {
       return isToday(this.selectedDate)
     },
@@ -176,6 +189,7 @@ export default {
     },
     disableDrag() {
       return (
+        !this.isManualPriorization ||
         this.filter === ALL ||
         this.status !== ALL ||
         this.selectedTags.length > 0
@@ -238,7 +252,9 @@ export default {
     },
     currentDayTasks() {
       return this.getFilteredTasks(
-        this.getTasksByDate(this.getSortedTasks(this.tasks)),
+        this.getTasksByDate(
+          this.getSortedTasks(this.tasks, this.activeSort.value),
+        ),
       )
     },
     nextDayTasks() {
@@ -318,9 +334,30 @@ export default {
       }
     },
     getSortedTasks(tasks, field = 'orderIndex') {
-      return tasks
-        .slice()
-        .sort((previous, next) => next[field] - previous[field])
+      switch (field) {
+        case 'date_asc':
+          return tasks
+            .slice()
+            .sort(
+              (previous, next) => new Date(previous.date) - new Date(next.date),
+            )
+        case 'date_desc':
+          return tasks
+            .slice()
+            .sort(
+              (previous, next) => new Date(next.date) - new Date(previous.date),
+            )
+        case 'orderIndex':
+          return tasks
+            .slice()
+            .sort((previous, next) => next.orderIndex - previous.orderIndex)
+        default:
+          return tasks
+            .slice()
+            .sort((previous, next) =>
+              previous[field].localeCompare(next[field]),
+            )
+      }
     },
     getTasksByDate(tasks, date = this.selectedDate) {
       return tasks.filter(task =>
@@ -353,6 +390,9 @@ export default {
     },
     handleOrderedTasks(orderedTasks) {
       this.editTasks(orderedTasks)
+    },
+    handleSortBy(sort) {
+      this.activeSort = this.sortBy.find(({ value }) => value === sort)
     },
     transferRemainingTasks() {
       this.tasks = this.tasks.map(task => {
@@ -453,7 +493,7 @@ export default {
     },
     createTask(newTask, tagId) {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
-      const date = this.selectedDate
+      const date = isToday(this.selectedDate) ? new Date() : this.selectedDate
 
       const higherTaskIndex =
         (this.currentDayTasks.length && this.currentDayTasks[0].orderIndex) || 0

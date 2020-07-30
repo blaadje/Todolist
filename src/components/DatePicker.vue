@@ -1,12 +1,12 @@
 <template>
-  <div :class="$style.wrapper">
+  <div>
     <div
       :class="$style.triangle"
       :style="{
         borderColor: `transparent transparent ${colors.hex} transparent`,
       }"
     />
-    <div :class="$style.agenda">
+    <Paper :class="$style.agenda">
       <div :class="$style.header" :style="{ background: colors.hex }">
         <span :class="$style.year">{{ year }}</span>
         <span :class="$style.date">
@@ -47,7 +47,7 @@
           @setSelectedDate="setSelectedDate"
         />
       </div>
-    </div>
+    </Paper>
   </div>
 </template>
 
@@ -56,11 +56,13 @@ import { getWeekFromDate, formatDate, incrementDay } from '@core/utils'
 
 import Button from './Button'
 import Calendar from './Calendar'
+import Paper from './Paper'
 
 export default {
   components: {
     Calendar,
     Button,
+    Paper,
   },
   props: {
     taskedDays: {
@@ -123,10 +125,6 @@ export default {
 </script>
 
 <style lang="scss" module>
-.wrapper {
-  background: white;
-}
-
 .shortcuts {
   padding: 1rem 2.8rem;
   border-bottom: 1px solid #ededed;
@@ -135,8 +133,7 @@ export default {
 .agenda {
   overflow: hidden;
   user-select: none;
-  border-radius: 0.2rem;
-  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
+  padding: 0;
 }
 
 .triangle {

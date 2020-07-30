@@ -1,5 +1,5 @@
 <template>
-  <div
+  <Paper
     v-click-outside="hideFilters"
     :class="[$style.wrapper, { [$style.isVisible]: isVisible }]"
   >
@@ -19,7 +19,7 @@
             :class="$style.tagsWrapper"
             :tags="tags"
             :selected-tags="selectedTags"
-            @selectedTag="tagId => $emit('filterByTag', tagId)"
+            @selectedTag="(tagId) => $emit('filterByTag', tagId)"
           />
           <div :class="$style.filterWrapper">
             <label :class="[$style.dateLabel, $style.statusTitle]">Date:</label>
@@ -65,18 +65,20 @@
         </div>
       </div>
     </div>
-  </div>
+  </Paper>
 </template>
 
 <script>
 import LeftArrowIcon from '../assets/leftArrow.svg'
 
+import Paper from './Paper'
 import TagList from './TagList'
 
 export default {
   components: {
     LeftArrowIcon,
     TagList,
+    Paper,
   },
   props: {
     tags: {
@@ -119,22 +121,20 @@ export default {
     buttonsStatus(element) {
       if (this.status === element) {
         return {
-          border: `1px solid${  this.colors.hex}`,
+          border: `1px solid${this.colors.hex}`,
           color: this.colors.hex,
         }
-      } 
-        return 'border: 1px solid #c2c2c2'
-      
+      }
+      return 'border: 1px solid #c2c2c2'
     },
     buttonsFilter(element) {
       if (this.filter === element) {
         return {
-          border: `1px solid${  this.colors.hex}`,
+          border: `1px solid${this.colors.hex}`,
           color: this.colors.hex,
         }
-      } 
-        return 'border: 1px solid #c2c2c2'
-      
+      }
+      return 'border: 1px solid #c2c2c2'
     },
   },
 }
@@ -145,13 +145,12 @@ $visibilityIcon: 20px;
 
 .wrapper {
   display: flex;
-  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
-  background: white;
   z-index: 1;
   width: auto;
   position: fixed;
   bottom: 5%;
   right: 0;
+  padding-left: 0;
   transition: transform 0.3s ease-in-out;
   border-radius: 0.4rem 0 0 0.4rem;
   transform: translateX(calc(100% - #{$visibilityIcon} + 2px));

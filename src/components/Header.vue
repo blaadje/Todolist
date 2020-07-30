@@ -253,6 +253,7 @@ $height: 115px;
 }
 
 .checkIcon {
+  color: white;
   fill: none;
   position: relative;
 }

@@ -4,19 +4,21 @@
       <Pellet :background="selectedTagColor" />
       <DownArrowIcon :class="$style.downArrowIcon" />
     </div>
-    <TagList
-      v-if="tagSelectorVisible"
-      :class="$style.tagList"
-      :horizontal="false"
-      :tags="tags"
-      @selectedTag="setSelectedTag"
-    />
+    <Paper v-if="tagSelectorVisible">
+      <TagList
+        :class="$style.tagList"
+        :horizontal="false"
+        :tags="tags"
+        @selectedTag="setSelectedTag"
+      />
+    </Paper>
   </div>
 </template>
 
 <script>
 import DownArrowIcon from '@assets/downArrow.svg'
 
+import Paper from './Paper'
 import Pellet from './Pellet'
 import TagList from './TagList'
 
@@ -25,6 +27,7 @@ export default {
     DownArrowIcon,
     TagList,
     Pellet,
+    Paper,
   },
   props: {
     tags: {
@@ -74,9 +77,5 @@ export default {
   margin-top: 0.5rem;
   display: flex;
   align-items: center;
-  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
-  border-radius: 0.2rem;
-  background: white;
-  padding: 0.5rem;
 }
 </style>
