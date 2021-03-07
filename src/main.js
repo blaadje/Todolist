@@ -45,6 +45,7 @@ function createWindow() {
     titleBarStyle: 'hiddenInset',
     height: 800,
     width: 550,
+    transparent: true,
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true,

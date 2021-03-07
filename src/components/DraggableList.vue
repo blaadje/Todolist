@@ -159,10 +159,6 @@ export default {
   align-items: center;
 }
 
-.taskWrapper:not(:last-child) {
-  border-bottom: 1px solid #ededed;
-}
-
 .ghost {
   position: relative;
 }
