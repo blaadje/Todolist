@@ -4,7 +4,7 @@
       <Pellet :background="selectedTagColor" />
       <DownArrowIcon :class="$style.downArrowIcon" />
     </div>
-    <Paper v-if="tagSelectorVisible">
+    <Paper v-if="tagSelectorVisible" :class="$style.content">
       <TagList
         :class="$style.tagList"
         :horizontal="false"
@@ -61,6 +61,12 @@ export default {
 </script>
 
 <style lang="scss" module>
+.content {
+  position: absolute;
+  top: 100%;
+  right: 0;
+}
+
 .topWrapper {
   display: flex;
   cursor: pointer;

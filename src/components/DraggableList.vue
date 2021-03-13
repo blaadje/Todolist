@@ -11,10 +11,10 @@
       ref="draggingItem"
       :key="index"
       :class="$style.taskWrapper"
-      @drop="(event) => drop(event, index)"
+      @drop="event => drop(event, index)"
       @dragstart="dragStart(index)"
       @dragend="dragEnd(index)"
-      @dragover="(event) => dragOver(event, index)"
+      @dragover="event => dragOver(event, index)"
     >
       <DragIcon v-if="!disabled" class="handle" :class="$style.dragIcon" />
       <slot :task="item" />
@@ -49,57 +49,84 @@ export default {
     }
   },
   methods: {
-    drop({ y }, index) {
-      if (this.draggingStartElementIndex === index) {
+    drop({ y }, hoveringTaskIndex) {
+      if (this.draggingStartElementIndex === hoveringTaskIndex) {
         return
       }
 
-      const isDirectionUp = this.isDirectionUp(
-        this.$refs.draggingItem[index],
-        y,
-      )
-      const oldTaskIndex = this.list[this.draggingStartElementIndex].orderIndex
-      const newTaskIndex = this.list[index].orderIndex
-
-      const newIndexPosition = this.list.findIndex(
-        ({ orderIndex }) => orderIndex === newTaskIndex,
-      )
-      const newTaskIndexFromDirection = isDirectionUp
-        ? newTaskIndex + 1
-        : newTaskIndex
-
-      const indexPosition = isDirectionUp
-        ? newIndexPosition - 1
-        : newIndexPosition
-
-      const orderedDailyTasks = this.orderTasks(
-        this.list,
-        oldTaskIndex,
-        newTaskIndexFromDirection,
-        indexPosition,
-      )
-
-      this.$emit('orderedTasks', orderedDailyTasks)
-    },
-    orderTasks(tasks, oldIndex, newIndex, newIndexPosition) {
-      return tasks.map((task, index) => {
-        if (task.orderIndex === oldIndex) {
-          return {
-            ...task,
-            orderIndex: newIndex,
+      // this can happen with old failing ordering system
+      const listHasCorruptedOrderIndex = this.list.some(
+        ({ orderIndex }, index, array) => {
+          if (index === 0) {
+            return false
           }
+
+          return (
+            orderIndex === array[index - 1].orderIndex ||
+            orderIndex > array[index - 1].orderIndex
+          )
+        },
+      )
+      const list = listHasCorruptedOrderIndex
+        ? this.list.map((task, index) => {
+            return {
+              ...task,
+              orderIndex: this.list.length - index,
+            }
+          })
+        : this.list
+      const draggedTask = list[this.draggingStartElementIndex]
+      const hoveringTaskElement = this.$refs.draggingItem[hoveringTaskIndex]
+      const hoveringTask = list[hoveringTaskIndex]
+      const isHoveringOnUpperPart = this.isDirectionUp(hoveringTaskElement, y)
+      const isDirectionUp = hoveringTaskIndex < this.draggingStartElementIndex
+      const getNewIndex = () => {
+        if (isDirectionUp) {
+          if (isHoveringOnUpperPart) {
+            return hoveringTask.orderIndex
+          }
+          return hoveringTask.orderIndex - 1
         }
 
-        return index <= newIndexPosition
-          ? {
-              ...task,
-              orderIndex: newIndex + 1 + newIndexPosition - index,
-            }
-          : {
-              ...task,
-              orderIndex: newIndex + newIndexPosition - index,
-            }
-      })
+        if (isHoveringOnUpperPart) {
+          return hoveringTask.orderIndex + 1
+        }
+        return hoveringTask.orderIndex
+      }
+      const newOrderIndex = getNewIndex()
+      const differenceBetween = (a, b) => {
+        return Math.abs(a - b)
+      }
+      const elementsNumberBetweenDraggedAndDropped = differenceBetween(
+        draggedTask.orderIndex,
+        newOrderIndex,
+      )
+      const listWithoutDraggedTask = list.filter(
+        ({ orderIndex }) => orderIndex !== draggedTask.orderIndex,
+      )
+      const updatedList = listWithoutDraggedTask
+        .splice(
+          isDirectionUp ? hoveringTaskIndex : this.draggingStartElementIndex,
+          elementsNumberBetweenDraggedAndDropped,
+        )
+        .map(task => {
+          return {
+            ...task,
+            orderIndex: isDirectionUp
+              ? task.orderIndex - 1
+              : task.orderIndex + 1,
+          }
+        })
+      const updatedDraggedTask = {
+        ...draggedTask,
+        orderIndex: newOrderIndex,
+      }
+
+      this.$emit('orderedTasks', [
+        ...listWithoutDraggedTask,
+        ...updatedList,
+        updatedDraggedTask,
+      ])
     },
     isDirectionUp(hoveringElement, y) {
       const { bottom } = hoveringElement.getBoundingClientRect()
@@ -157,10 +184,6 @@ export default {
 .taskWrapper {
   display: flex;
   align-items: center;
-}
-
-.taskWrapper:not(:last-child) {
-  border-bottom: 1px solid #ededed;
 }
 
 .ghost {

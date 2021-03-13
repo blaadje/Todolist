@@ -54,16 +54,20 @@ export default {
 .wrapper {
   display: flex;
   position: relative;
-  background: white;
+  margin: 0 1rem 1rem 1rem;
   z-index: 2;
 }
 
 .input {
+  box-shadow: 0px 0px 19px rgba(0, 0, 0, 0.12);
+  background: rgba(white, 0.9);
+  border-radius: 0.6rem;
+  overflow: hidden;
   -webkit-app-region: no-drag;
   border: none;
   font-size: 1.5em;
   font-weight: 200;
-  padding: 1em;
+  padding: 0.6em 0.8em;
   width: 100%;
   margin: 0;
   outline: none;
@@ -72,7 +76,8 @@ export default {
 
 .tagSelector {
   position: absolute;
-  top: 25px;
+  top: 50%;
   right: 20px;
+  transform: translateY(-50%);
 }
 </style>

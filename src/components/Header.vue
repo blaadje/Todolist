@@ -1,5 +1,5 @@
 <template>
-  <header :class="$style.wrapper" :style="{ background: colors.hex }">
+  <header :class="$style.wrapper">
     <Tooltip>
       <template #trigger>
         <span :class="$style.dateFormatted" @click="datePickerVisible = true">
@@ -27,10 +27,17 @@
             @click="handleExportTask"
           />
           <div v-if="isExported" :class="$style.checkIconWrapper">
-            <CheckIcon
-              :class="[$style.icon, $style.checkIcon]"
-              @click="handleExportTask"
-            />
+            <Tooltip appearance="success">
+              <template #trigger>
+                <CheckIcon
+                  :class="[$style.icon, $style.checkIcon]"
+                  @click="handleExportTask"
+                />
+              </template>
+              <template #content>
+                <span>Copied in clipboard!</span>
+              </template>
+            </Tooltip>
           </div>
         </template>
         <template #content>
@@ -153,17 +160,14 @@ export default {
 </script>
 
 <style lang="scss" module>
-$height: 115px;
+$height: 170px;
 
 .wrapper {
   width: 100%;
-  height: $height;
   position: relative;
-  padding: 2.5em 1em;
+  padding: 2em 1em;
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 4;
   -webkit-app-region: drag;
 }
 
@@ -176,7 +180,6 @@ $height: 115px;
 .icons {
   flex: 5;
   display: flex;
-  align-items: center;
   margin-left: 1rem;
 }
 
@@ -208,6 +211,7 @@ $height: 115px;
   right: 0;
   margin: auto;
   z-index: 5;
+  border-radius: 0.6rem;
 }
 
 .icon {
@@ -235,21 +239,9 @@ $height: 115px;
 }
 
 .checkIconWrapper {
-  position: relative;
-}
-
-.checkIconWrapper::after {
   white-space: nowrap;
-  content: 'Copied in clipboard!';
-  padding: 0.3rem 0.6rem;
   color: white;
   font-size: 0.8rem;
-  background: rgba(#2ec685, 0.7);
-  border-radius: 0.2rem;
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .checkIcon {
