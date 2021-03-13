@@ -54,7 +54,8 @@ export default {
         return
       }
 
-      const listHasWrongOrderIndex = this.list.some(
+      // this can happen with old failing ordering system
+      const listHasCorruptedOrderIndex = this.list.some(
         ({ orderIndex }, index, array) => {
           if (index === 0) {
             return false
@@ -66,7 +67,7 @@ export default {
           )
         },
       )
-      const list = listHasWrongOrderIndex
+      const list = listHasCorruptedOrderIndex
         ? this.list.map((task, index) => {
             return {
               ...task,
@@ -96,7 +97,7 @@ export default {
       const differenceBetween = (a, b) => {
         return Math.abs(a - b)
       }
-      const nombreElementsEntreDraggedAndDropped = differenceBetween(
+      const elementsNumberBetweenDraggedAndDropped = differenceBetween(
         draggedTask.orderIndex,
         newOrderIndex,
       )
@@ -106,7 +107,7 @@ export default {
       const updatedList = listWithoutDraggedTask
         .splice(
           isDirectionUp ? hoveringTaskIndex : this.draggingStartElementIndex,
-          nombreElementsEntreDraggedAndDropped,
+          elementsNumberBetweenDraggedAndDropped,
         )
         .map(task => {
           return {
