@@ -24,7 +24,6 @@
         <TaskGenerator
           v-if="isInputAvailable"
           key="taskGenerator"
-          :class="$style.taskGenerator"
           :tags="tags"
           @createTask="createTask"
         />
@@ -559,15 +558,15 @@ export default {
     },
     createTask(newTask, tagId) {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
-      const date = isToday(this.selectedDate) ? new Date() : this.selectedDate
 
+      const date = isToday(this.selectedDate) ? new Date() : this.selectedDate
       const higherTaskIndex =
-        (this.currentDayTasks.length && this.currentDayTasks[0].orderIndex) || 0
+        (this.currentDayTasks.uncompleted.length && this.currentDayTasks.uncompleted[0].orderIndex) + 1 || 0
 
       const task = {
         name: newTask,
         date,
-        orderIndex: higherTaskIndex + 1,
+        orderIndex: higherTaskIndex,
         id: `${this.generateId('xxxxxx')}${getTimeStampFromDate(new Date())}`,
         tagId,
         completed: false,
