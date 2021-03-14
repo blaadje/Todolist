@@ -60,7 +60,7 @@
             There's no task
           </h2>
           <DraggableList
-            v-if="currentTasks.uncompleted.length"
+            v-if="status === 'all' || status === 'todo'"
             :class="$style.draggableList"
             :list="currentTasks.uncompleted"
             :disabled="disableDrag"
@@ -79,7 +79,7 @@
             </template>
           </DraggableList>
           <div
-            v-if="currentTasks.completed.length"
+            v-if="currentTasks.completed.length && (status === 'all' || status === 'done')"
             :class="$style.completedTasksWrapper"
           >
             <Divider>Done</Divider>
@@ -561,7 +561,8 @@ export default {
 
       const date = isToday(this.selectedDate) ? new Date() : this.selectedDate
       const higherTaskIndex =
-        (this.currentDayTasks.uncompleted.length && this.currentDayTasks.uncompleted[0].orderIndex) + 1 || 0
+        (this.currentDayTasks.uncompleted.length &&
+          this.currentDayTasks.uncompleted[0].orderIndex) + 1 || 0
 
       const task = {
         name: newTask,
