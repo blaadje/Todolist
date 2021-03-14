@@ -49,6 +49,7 @@ function createWindow() {
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true,
+      contextIsolation: false
     },
   })
 
