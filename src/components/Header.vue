@@ -160,7 +160,7 @@ export default {
 </script>
 
 <style lang="scss" module>
-$height: 170px;
+$height: 85px;
 
 .wrapper {
   width: 100%;
@@ -253,7 +253,7 @@ $height: 170px;
 .datePicker {
   position: absolute;
   left: 0;
-  top: $height + 17px;
+  top: $height;
   right: 0;
   width: 392px;
   margin: auto;

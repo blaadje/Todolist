@@ -706,9 +706,7 @@ ul {
 }
 
 .completedTask {
-  // padding: 0 1rem;
   padding: 1rem 1rem;
-  // border-bottom: 1px solid #ededed;
 }
 
 .taskHeader {
