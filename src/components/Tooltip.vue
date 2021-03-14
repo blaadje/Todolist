@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.wrapper">
+  <div :class="$style.wrapper" :style="cssVar">
     <span
       ref="trigger"
       :class="$style.trigger"
@@ -25,9 +25,15 @@
 
 <script>
 let timeout = 0
+const appearances = ['default', 'success']
 
 export default {
   props: {
+    appearance: {
+      type: String,
+      validator: appearance => appearances.includes(appearance),
+      default: 'default',
+    },
     disabled: {
       type: Boolean,
       default: false,
@@ -38,7 +44,24 @@ export default {
       isVisible: false,
     }
   },
+  computed: {
+    cssVar() {
+      return {
+        '--background-color': this.getBackgroundColorByAppearance(
+          this.appearance,
+        ),
+      }
+    },
+  },
   methods: {
+    getBackgroundColorByAppearance(appearance) {
+      switch (appearance) {
+        case 'success':
+          return '53, 153, 68'
+        default:
+          return '0, 0, 0'
+      }
+    },
     async show() {
       if (this.disabled) {
         return
@@ -60,23 +83,26 @@ export default {
 </script>
 
 <style lang="scss" module>
-$background: rgba(black, 0.7);
+$background-color: rgba(var(--background-color), 0.7);
 
 .wrapper {
   position: relative;
+  z-index: 99999;
 }
 
 .trigger {
   display: flex;
   height: 100%;
   width: 100%;
+  z-index: 99999;
 }
 
 .content {
   font-size: 0.8rem;
   position: absolute;
-  background: $background;
+  background: $background-color;
   border-radius: 0.2rem;
+  z-index: 99999;
   color: white;
   padding: 0.3rem 0.6rem;
   font-weight: bold;
@@ -93,11 +119,12 @@ $background: rgba(black, 0.7);
   content: '';
   position: absolute;
   bottom: 100%;
+  z-index: 99999;
   width: 0;
   height: 0;
   border-style: solid;
   border-width: 0 8px 8px 8px;
-  border-color: transparent transparent $background transparent;
+  border-color: transparent transparent $background-color transparent;
 }
 
 .slide-enter-active,

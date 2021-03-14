@@ -262,6 +262,7 @@ $visibilityIcon: 20px;
   font-size: 0.8em;
   color: #c2c2c2;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .footer label[for='toggle-all'] {

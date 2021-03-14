@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.wrapper">
+  <div :class="$style.wrapper" :style="{ background }">
     <TransitionGroup
       :class="$style.transition"
       tag="div"
@@ -21,15 +21,16 @@
           @setSelectedColor="setColor"
           @exportTasks="handleExportTasks"
         />
+        <TaskGenerator
+          v-if="isInputAvailable"
+          key="taskGenerator"
+          :tags="tags"
+          @createTask="createTask"
+        />
       </div>
-      <TaskGenerator
-        v-if="isInputAvailable"
-        key="taskGenerator"
-        :tags="tags"
-        @createTask="createTask"
-      />
       <TaskHeader
         key="taskHeader"
+        :class="$style.taskHeader"
         :has-remaining-task="hasRemainingTask"
         :active-sort="activeSort"
         :sort-by="sortBy"
@@ -50,13 +51,18 @@
           :key="index"
           :class="$style.taskList"
         >
-          <h2 v-if="!currentTasks.length" :class="$style.emptyState">
+          <h2
+            v-if="
+              !currentTasks.uncompleted.length && !currentTasks.completed.length
+            "
+            :class="$style.emptyState"
+          >
             There's no task
           </h2>
           <DraggableList
-            v-if="currentTasks.length"
+            v-if="currentTasks.uncompleted.length"
             :class="$style.draggableList"
-            :list="currentTasks"
+            :list="currentTasks.uncompleted"
             :disabled="disableDrag"
             @orderedTasks="handleOrderedTasks"
           >
@@ -72,6 +78,23 @@
               />
             </template>
           </DraggableList>
+          <div
+            v-if="currentTasks.completed.length"
+            :class="$style.completedTasksWrapper"
+          >
+            <Divider>Done</Divider>
+            <Task
+              v-for="task in currentTasks.completed"
+              :key="task.id"
+              :class="$style.completedTask"
+              :task="task"
+              :tags="tags"
+              :task-date-format="getFormat"
+              @setTaskCompleted="toggleTaskCompleted"
+              @deleteTask="deleteTask"
+              @editTask="editTask"
+            />
+          </div>
         </div>
       </Slider>
     </TransitionGroup>
@@ -108,6 +131,7 @@ import {
   isToday,
 } from '@core/utils'
 
+import Divider from './Divider'
 import DraggableList from './DraggableList'
 import Filters from './Filters'
 import Header from './Header'
@@ -117,8 +141,10 @@ import TaskGenerator from './TaskGenerator'
 import TaskHeader from './TaskHeader'
 import UpdatesPanel from './UpdatesPanel'
 
-const DATE = 'date'
-const ALL = 'all'
+const FILTER_DATE = 'date'
+const FILTER_ALL = 'all'
+const STATUS_TODO = 'todo'
+const STATUS_DONE = 'done'
 const CATEGORY_TASK = 'category-task'
 const CATEGORY_SYSTEM = 'category-system'
 const ACTION_VERSION = 'action-version'
@@ -136,6 +162,7 @@ export default {
     UpdatesPanel,
     DraggableList,
     Slider,
+    Divider,
   },
   data() {
     return {
@@ -173,11 +200,14 @@ export default {
       ],
       selectedDate: new Date(),
       selectedTags: [],
-      filter: DATE,
-      status: ALL,
+      filter: FILTER_DATE,
+      status: FILTER_ALL,
     }
   },
   computed: {
+    background() {
+      return this.colors.hex8 || this.colors.hex
+    },
     isManualPriorization() {
       return this.activeSort.value === 'orderIndex'
     },
@@ -190,8 +220,8 @@ export default {
     disableDrag() {
       return (
         !this.isManualPriorization ||
-        this.filter === ALL ||
-        this.status !== ALL ||
+        this.filter === FILTER_ALL ||
+        this.status !== FILTER_ALL ||
         this.selectedTags.length > 0
       )
     },
@@ -202,10 +232,10 @@ export default {
       )
     },
     hasTask() {
-      return Boolean(this.currentDayTasks.length !== 0)
+      return Boolean(this.currentDayTasks.uncompleted.length !== 0)
     },
     selectedDateView() {
-      return this.filter !== ALL && this.selectedDate
+      return this.filter !== FILTER_ALL && this.selectedDate
     },
     getFormat() {
       return this.selectedDateView
@@ -215,13 +245,13 @@ export default {
     hasRemainingTask() {
       return this.tasks.some(task => {
         return (
-          formatDate(new Date(task.date)) < formatDate(this.today) &&
-          !task.completed
+          new Date(formatDate(new Date(task.date))) <
+            new Date(formatDate(this.today)) && !task.completed
         )
       })
     },
     remainingTasksAmount() {
-      return this.currentDayTasks.filter(task => !task.completed).length
+      return this.currentDayTasks.uncompleted.length
     },
     taskedDays() {
       return this.tasks.reduce((acc, { date }) => {
@@ -243,27 +273,56 @@ export default {
       return Boolean(this.remainingTasksAmount === 0)
     },
     previousDayTasks() {
-      return this.getFilteredTasks(
-        this.getTasksByDate(
-          this.getSortedTasks(this.tasks),
-          decrementDay(this.selectedDate),
+      return {
+        completed: this.getFilteredTasks(
+          this.getTasksByDate(
+            this.getSortedTasks(this.tasks),
+            decrementDay(this.selectedDate),
+          ),
+          STATUS_DONE,
         ),
-      )
+        uncompleted: this.getFilteredTasks(
+          this.getTasksByDate(
+            this.getSortedTasks(this.tasks),
+            decrementDay(this.selectedDate),
+          ),
+          STATUS_TODO,
+        ),
+      }
     },
     currentDayTasks() {
-      return this.getFilteredTasks(
-        this.getTasksByDate(
-          this.getSortedTasks(this.tasks, this.activeSort.value),
+      return {
+        completed: this.getFilteredTasks(
+          this.getTasksByDate(
+            this.getSortedTasks(this.tasks, this.activeSort.value),
+          ),
+          STATUS_DONE,
         ),
-      )
+        uncompleted: this.getFilteredTasks(
+          this.getTasksByDate(
+            this.getSortedTasks(this.tasks, this.activeSort.value),
+          ),
+          STATUS_TODO,
+        ),
+      }
     },
     nextDayTasks() {
-      return this.getFilteredTasks(
-        this.getTasksByDate(
-          this.getSortedTasks(this.tasks),
-          incrementDay(this.selectedDate),
+      return {
+        completed: this.getFilteredTasks(
+          this.getTasksByDate(
+            this.getSortedTasks(this.tasks),
+            incrementDay(this.selectedDate),
+          ),
+          STATUS_DONE,
         ),
-      )
+        uncompleted: this.getFilteredTasks(
+          this.getTasksByDate(
+            this.getSortedTasks(this.tasks),
+            incrementDay(this.selectedDate),
+          ),
+          STATUS_TODO,
+        ),
+      }
     },
     sliderTasks() {
       return [this.previousDayTasks, this.currentDayTasks, this.nextDayTasks]
@@ -317,17 +376,17 @@ export default {
     handleDecrement() {
       this.selectedDate = decrementDay(this.selectedDate)
     },
-    getFilteredTasks(tasks) {
+    getFilteredTasks(tasks, status) {
       const filteredTasks = tasks.filter(task =>
         this.selectedTags.length > 0
           ? task.tagId && this.selectedTags.includes(task.tagId)
           : true,
       )
 
-      switch (this.status) {
-        case 'completed':
+      switch (status) {
+        case STATUS_DONE:
           return filteredTasks.filter(task => task.completed)
-        case 'todo':
+        case STATUS_TODO:
           return filteredTasks.filter(task => !task.completed)
         default:
           return filteredTasks
@@ -361,13 +420,19 @@ export default {
     },
     getTasksByDate(tasks, date = this.selectedDate) {
       return tasks.filter(task =>
-        this.filter === DATE ? areDatesEqual(new Date(task.date), date) : true,
+        this.filter === FILTER_DATE
+          ? areDatesEqual(new Date(task.date), date)
+          : true,
       )
     },
     handleExportTasks() {
       const textarea = document.createElement('textarea')
+      const tasks = [
+        ...this.currentDayTasks.uncompleted,
+        ...this.currentDayTasks.completed,
+      ]
       const exportedString = `
-        ${this.currentDayTasks.map(({ completed, name, date }) => {
+        ${tasks.map(({ completed, name, date }) => {
           const completedStatus = completed ? 'x' : ' '
 
           return `- [${completedStatus}] ${name} - ${formatDate(
@@ -428,19 +493,19 @@ export default {
         : withoutselectedTags
     },
     handleFilterAll() {
-      this.filter = ALL
+      this.filter = FILTER_ALL
     },
     handleFilterDate() {
-      this.filter = DATE
+      this.filter = FILTER_DATE
     },
     handleStatusAll() {
-      this.status = ALL
+      this.status = FILTER_ALL
     },
     handleStatusTodo() {
-      this.status = 'todo'
+      this.status = STATUS_TODO
     },
     handleStatusCompleted() {
-      this.status = 'completed'
+      this.status = STATUS_DONE
     },
     generateId(format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx') {
       let d = getTimeStampFromDate(new Date())
@@ -493,15 +558,15 @@ export default {
     },
     createTask(newTask, tagId) {
       this.user.event(CATEGORY_TASK, ACTION_CREATE).send()
-      const date = isToday(this.selectedDate) ? new Date() : this.selectedDate
 
+      const date = isToday(this.selectedDate) ? new Date() : this.selectedDate
       const higherTaskIndex =
-        (this.currentDayTasks.length && this.currentDayTasks[0].orderIndex) || 0
+        (this.currentDayTasks.uncompleted.length && this.currentDayTasks.uncompleted[0].orderIndex) + 1 || 0
 
       const task = {
         name: newTask,
         date,
-        orderIndex: higherTaskIndex + 1,
+        orderIndex: higherTaskIndex,
         id: `${this.generateId('xxxxxx')}${getTimeStampFromDate(new Date())}`,
         tagId,
         completed: false,
@@ -556,12 +621,17 @@ $grey: #c2c2c2;
 $lightGrey: #757575;
 $duration: 0.5s;
 
+body {
+  position: relative;
+  overflow-y: scroll;
+  overflow-y: overlay;
+}
+
 body,
 h1,
 h2,
 input {
   font-family: 'Nunito', sans-serif;
-  background: white;
   padding: 0;
   margin: 0;
   line-height: 100%;
@@ -586,6 +656,26 @@ h2 {
 ul {
   padding: 0;
   margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  -webkit-border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(rgb(118, 115, 129), 0.6);
+  -webkit-border-radius: 3px;
+  &:window-inactive {
+    background: rgba(#f5f7fc, 0.4);
+  }
 }
 
 .wrapper {
@@ -614,15 +704,29 @@ ul {
   flex: 1;
 }
 
+.completedTask {
+  // padding: 0 1rem;
+  padding: 1rem 1rem;
+  // border-bottom: 1px solid #ededed;
+}
+
+.taskHeader {
+  background: white;
+  border-radius: 1.5rem 1.5rem 0 0;
+  z-index: 3;
+}
+
 .emptyState {
   width: 100%;
   flex-grow: 1;
 }
 
 .taskList {
+  background: white;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  z-index: 1;
 }
 
 .topWrapper {

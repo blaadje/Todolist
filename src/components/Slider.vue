@@ -234,5 +234,6 @@ export default {
   flex-wrap: nowrap;
   scroll-behavior: auto;
   user-select: none;
+  background: white;
 }
 </style>
