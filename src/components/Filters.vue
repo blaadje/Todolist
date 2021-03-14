@@ -56,7 +56,7 @@
             </button>
             <button
               :class="$style.filterButton"
-              :style="buttonsStatus('completed')"
+              :style="buttonsStatus('done')"
               @click.prevent="$emit('statusByCompleted')"
             >
               Completed
