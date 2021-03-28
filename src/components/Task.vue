@@ -173,8 +173,9 @@ export default {
 
 .label {
   color: #757575;
-  font-size: 1.2em;
+  font-size: 1.2rem;
   font-weight: 100;
+  line-height: 1.6rem;
   display: inline;
   position: relative;
 }
