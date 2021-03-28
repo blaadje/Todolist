@@ -1,14 +1,17 @@
 import dotenv from 'dotenv'
 
 import * as Sentry from '@sentry/browser'
-import vClickOutside from 'v-click-outside'
-import Vue from 'vue'
+import { createApp } from 'vue'
+import vClickOutside from 'vue3-click-outside'
 
 import App from './components/App'
 
-Vue.use(vClickOutside)
-
 dotenv.config()
+
+const app = createApp(App)
+
+app.use(vClickOutside)
+app.mount('#app')
 
 Sentry.init({
   dsn:
@@ -22,13 +25,3 @@ Sentry.init({
     return event
   },
 })
-
-// eslint-disable-next-line global-require
-if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
-
-Vue.config.productionTip = false
-
-/* eslint-disable no-new */
-new Vue({
-  render: h => h(App),
-}).$mount('#app')

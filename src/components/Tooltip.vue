@@ -24,14 +24,16 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 let timeout = 0
 const appearances = ['default', 'success']
 
-export default {
+export default defineComponent({
   props: {
     appearance: {
       type: String,
-      validator: appearance => appearances.includes(appearance),
+      validator: (appearance) => appearances.includes(appearance),
       default: 'default',
     },
     disabled: {
@@ -79,7 +81,7 @@ export default {
       this.isVisible = false
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

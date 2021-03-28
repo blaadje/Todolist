@@ -80,6 +80,8 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import LeftArrowIcon from '@assets/leftArrow.svg'
 import {
   formatDate,
@@ -93,7 +95,7 @@ import {
 
 import Slider from './Slider'
 
-export default {
+export default defineComponent({
   name: 'App',
   components: {
     Slider,
@@ -210,7 +212,7 @@ export default {
       this.daySize = (element.clientWidth - padding * 2) / daysInWeek
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

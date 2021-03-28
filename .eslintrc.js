@@ -1,5 +1,6 @@
 module.exports = {
   root: true,
+  ignorePatterns: ['dist'],
   extends: [
     'airbnb-base',
     'plugin:vue/recommended',
@@ -7,19 +8,7 @@ module.exports = {
     'prettier/vue',
     'plugin:import/errors',
     'plugin:import/warnings',
-  ],
-  overrides: [
-    {
-      files: ['./config/**/*'],
-      rules: {
-        'import/no-extraneous-dependencies': [
-          'error',
-          {
-            devDependencies: ['./config/**/*'],
-          },
-        ],
-      },
-    },
+    'plugin:prettier/recommended',
   ],
   parserOptions: {
     parser: 'babel-eslint',
@@ -32,12 +21,17 @@ module.exports = {
       'ignorePackages',
       {
         js: 'never',
-        mjs: 'never',
-        jsx: 'never',
-        ts: 'never',
-        tsx: 'never',
         vue: 'never',
       },
+    ],
+    'no-shadow': [
+      'error',
+      { builtinGlobals: false, hoist: 'functions', allow: ['state'] },
+    ],
+    'newline-after-var': ['error', 'always'],
+    'no-param-reassign': [
+      'error',
+      { props: true, ignorePropertyModificationsFor: ['state'] },
     ],
     'import/newline-after-import': ['error', { count: 1 }],
     'import/order': [
@@ -56,12 +50,17 @@ module.exports = {
       },
     ],
   },
-
   settings: {
-    'import/core-modules': ['electron', 'dotenv', 'electron-updater'],
+    'import/core-modules': ['dotenv', 'electron'],
     'import/resolver': {
-      node: {},
-      webpack: { config: './config/webpack.base.js' },
+      alias: {
+        map: [
+          ['@core', './src/core'],
+          ['@components', './src/components'],
+          ['@assets', './src/assets'],
+        ],
+        extensions: ['.js', '.vue'],
+      },
     },
   },
 }

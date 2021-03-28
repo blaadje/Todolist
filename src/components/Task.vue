@@ -6,7 +6,6 @@
         [$style.editingText]: editingText,
       },
     ]"
-    v-on="$listeners"
   >
     <div v-if="editingText === null" :class="$style.view">
       <input
@@ -17,8 +16,8 @@
         @click="$emit('setTaskCompleted', task.id)"
       />
       <label :class="$style.toggleIconsWrapper" :for="`toggle-${task.id}`">
-        <CompletedTaskIcon v-if="task.completed" />
-        <RunningTaskIcon v-else />
+        <CompletedTaskIcon v-if="task.completed" :class="$style.icon" />
+        <RunningTaskIcon v-else :class="$style.icon" />
       </label>
       <div :class="$style.textWrapper" @dblclick="editingTaskName">
         <span :class="$style.date">
@@ -37,7 +36,7 @@
     <input
       v-if="editingText !== null"
       v-model="editingText"
-      v-focus="editingText"
+      v-focus
       :class="$style.editingTextInput"
       type="text"
       @keyup.enter="handleEditTask"
@@ -47,21 +46,21 @@
 </template>
 
 <script>
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 
 import CompletedTaskIcon from '@assets/completedTask.svg'
 import CrossIcon from '@assets/cross.svg'
 import RunningTaskIcon from '@assets/runningTask.svg'
 import { formatDate } from '@core/utils'
 
-export default {
+export default defineComponent({
   directives: {
-    focus(el, value) {
-      if (value) {
-        Vue.nextTick(() => {
-          el.focus()
-        })
+    focus(element) {
+      if (!element.value) {
+        return
       }
+
+      element.focus()
     },
   },
   components: {
@@ -116,7 +115,7 @@ export default {
       this.editingText = this.task.name
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>
@@ -202,6 +201,11 @@ export default {
   height: 25px;
   width: 25px;
   cursor: pointer;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
 }
 
 .view {

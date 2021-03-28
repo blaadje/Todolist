@@ -16,9 +16,11 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import TagSelector from './TagSelector'
 
-export default {
+export default defineComponent({
   components: {
     TagSelector,
   },
@@ -47,7 +49,7 @@ export default {
       this.newTodoName = ''
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

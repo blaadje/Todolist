@@ -69,12 +69,14 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import LeftArrowIcon from '../assets/leftArrow.svg'
 
 import Paper from './Paper'
 import TagList from './TagList'
 
-export default {
+export default defineComponent({
   components: {
     LeftArrowIcon,
     TagList,
@@ -137,7 +139,7 @@ export default {
       return 'border: 1px solid #c2c2c2'
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

@@ -1,37 +1,14 @@
-<template>
-  <Draggable
-    :drag-class="$style.drag"
-    :ghost-class="$style.ghost"
-    :chosen-class="$style.chosen"
-    :sort="false"
-    handle=".handle"
-  >
-    <div
-      v-for="(item, index) in list"
-      ref="draggingItem"
-      :key="index"
-      :class="$style.taskWrapper"
-      @drop="event => drop(event, index)"
-      @dragstart="dragStart(index)"
-      @dragend="dragEnd(index)"
-      @dragover="event => dragOver(event, index)"
-    >
-      <DragIcon v-if="!disabled" class="handle" :class="$style.dragIcon" />
-      <slot :task="item" />
-    </div>
-  </Draggable>
-</template>
-
 <script>
-import Draggable from 'vuedraggable'
+import { defineComponent, toRef, ref, useCssModule, watch } from 'vue'
 
 import DragIcon from '@assets/drag.svg'
 
-export default {
-  components: {
-    Draggable,
-    DragIcon,
-  },
+let draggingStartElementIndex = null
+let draggedElementIndex = null
+let currentGhost = null
+
+// @TODO: this component is ugly, it needs to be refactor
+export default defineComponent({
   props: {
     list: {
       type: Array,
@@ -42,20 +19,37 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      draggedElementIndex: null,
-      draggingStartElementIndex: null,
+  setup(props, { emit, slots }) {
+    const listRef = toRef(props, 'list')
+    const style = useCssModule()
+    const itemRefs = ref([])
+
+    watch(listRef, () => {
+      itemRefs.value = []
+    })
+    const setItemRef = (element) => {
+      if (!element) {
+        return
+      }
+
+      itemRefs.value.push(element)
     }
-  },
-  methods: {
-    drop({ y }, hoveringTaskIndex) {
-      if (this.draggingStartElementIndex === hoveringTaskIndex) {
+    const isDirectionUp = (hoveringElement, y) => {
+      const { bottom } = hoveringElement.getBoundingClientRect()
+      const middleHeight = hoveringElement.offsetHeight / 2
+      const middlePosition = bottom - middleHeight
+
+      return y < middlePosition
+    }
+    const drop = ({ y }, hoveringTaskIndex) => {
+      document.body.removeChild(currentGhost)
+
+      if (draggingStartElementIndex === hoveringTaskIndex) {
         return
       }
 
       // this can happen with old failing ordering system
-      const listHasCorruptedOrderIndex = this.list.some(
+      const listHasCorruptedOrderIndex = listRef.value.some(
         ({ orderIndex }, index, array) => {
           if (index === 0) {
             return false
@@ -68,20 +62,20 @@ export default {
         },
       )
       const list = listHasCorruptedOrderIndex
-        ? this.list.map((task, index) => {
+        ? listRef.value.map((task, index) => {
             return {
               ...task,
-              orderIndex: this.list.length - index,
+              orderIndex: listRef.value.length - index,
             }
           })
-        : this.list
-      const draggedTask = list[this.draggingStartElementIndex]
-      const hoveringTaskElement = this.$refs.draggingItem[hoveringTaskIndex]
+        : listRef.value
+      const draggedTask = list[draggingStartElementIndex]
+      const hoveringTaskElement = itemRefs.value[hoveringTaskIndex]
       const hoveringTask = list[hoveringTaskIndex]
-      const isHoveringOnUpperPart = this.isDirectionUp(hoveringTaskElement, y)
-      const isDirectionUp = hoveringTaskIndex < this.draggingStartElementIndex
+      const isHoveringOnUpperPart = isDirectionUp(hoveringTaskElement, y)
+      const directionUp = hoveringTaskIndex < draggingStartElementIndex
       const getNewIndex = () => {
-        if (isDirectionUp) {
+        if (directionUp) {
           if (isHoveringOnUpperPart) {
             return hoveringTask.orderIndex
           }
@@ -94,9 +88,7 @@ export default {
         return hoveringTask.orderIndex
       }
       const newOrderIndex = getNewIndex()
-      const differenceBetween = (a, b) => {
-        return Math.abs(a - b)
-      }
+      const differenceBetween = (a, b) => Math.abs(a - b)
       const elementsNumberBetweenDraggedAndDropped = differenceBetween(
         draggedTask.orderIndex,
         newOrderIndex,
@@ -106,15 +98,13 @@ export default {
       )
       const updatedList = listWithoutDraggedTask
         .splice(
-          isDirectionUp ? hoveringTaskIndex : this.draggingStartElementIndex,
+          directionUp ? hoveringTaskIndex : draggingStartElementIndex,
           elementsNumberBetweenDraggedAndDropped,
         )
-        .map(task => {
+        .map((task) => {
           return {
             ...task,
-            orderIndex: isDirectionUp
-              ? task.orderIndex - 1
-              : task.orderIndex + 1,
+            orderIndex: directionUp ? task.orderIndex - 1 : task.orderIndex + 1,
           }
         })
       const updatedDraggedTask = {
@@ -122,54 +112,88 @@ export default {
         orderIndex: newOrderIndex,
       }
 
-      this.$emit('orderedTasks', [
+      emit('orderedTasks', [
         ...listWithoutDraggedTask,
         ...updatedList,
         updatedDraggedTask,
       ])
-    },
-    isDirectionUp(hoveringElement, y) {
-      const { bottom } = hoveringElement.getBoundingClientRect()
-      const middleHeight = hoveringElement.offsetHeight / 2
-      const middlePosition = bottom - middleHeight
+    }
+    const dragStart = (event, index) => {
+      const item = itemRefs.value[index]
+      const ghost = item.cloneNode(true)
+      const itemHalfHeight = item.offsetHeight / 2
 
-      return y < middlePosition
-    },
-    dragStart(index) {
-      this.draggingStartElementIndex = index
-    },
-    dragEnd() {
-      this.$refs.draggingItem.forEach(element => {
-        // eslint-disable-next-line no-param-reassign
-        element.style.boxShadow = 'none'
-      })
-      this.draggingStartElementIndex = null
-    },
-    dragOver({ y }, index) {
-      const hoveredElement = this.$refs.draggingItem[index]
-      const color = '#62bafe'
+      ghost.style.background = 'white'
+      ghost.style.borderRadius = '0.4rem'
 
-      if (this.draggedElementIndex) {
-        const previousElement = this.$refs.draggingItem[
-          this.draggedElementIndex
-        ]
+      document.body.appendChild(ghost)
+      event.dataTransfer.setDragImage(ghost, 0, itemHalfHeight)
+
+      currentGhost = ghost
+      draggingStartElementIndex = index
+
+      // hack to send ghost image before the item has the overlay class
+      setTimeout(() => item.classList.add(style.overlay))
+    }
+    const dragEnd = () => {
+      const draggedElement = itemRefs.value[draggedElementIndex]
+      const draggingStartElement = itemRefs.value[draggingStartElementIndex]
+
+      draggedElement.style.boxShadow = 'none'
+      draggingStartElement.classList.remove(style.overlay)
+
+      draggedElementIndex = null
+      draggingStartElementIndex = null
+    }
+    const dragOver = (event, index) => {
+      const { y } = event
+      const hoveredElement = itemRefs.value[index]
+
+      // eslint-disable-next-line no-param-reassign
+      event.dataTransfer.dropEffect = 'move'
+      event.preventDefault()
+
+      if (draggedElementIndex !== null) {
+        const previousElement = itemRefs.value[draggedElementIndex]
 
         previousElement.style.boxShadow = 'none'
       }
 
-      this.draggedElementIndex = index
-
-      if (this.draggingStartElementIndex === index) {
-        hoveredElement.style.boxShadow = 'none'
-        return
-      }
-
+      draggedElementIndex = index
       hoveredElement.style.boxShadow = `${
-        this.isDirectionUp(hoveredElement, y) ? 'inset' : ''
-      } 0px 2px 1px 0px ${color}`
-    },
+        isDirectionUp(hoveredElement, y) ? 'inset' : ''
+      } 0px 2px 1px 0px #62bafe`
+    }
+
+    return () => (
+      <ul class={style.listWrapper}>
+        {listRef.value.map((task, index) => {
+          return (
+            <li
+              class={style.item}
+              ref={setItemRef}
+              key={index}
+              onDragover={(event) => dragOver(event, index)}
+              onDrop={(event) => drop(event, index)}
+              onDragend={dragEnd}
+            >
+              {!props.disabled && (
+                <span
+                  draggable="true"
+                  onDragstart={(event) => dragStart(event, index)}
+                  onMousedown={(event) => event.stopPropagation()}
+                >
+                  <DragIcon class={style.dragIcon} />
+                </span>
+              )}
+              {slots.default({ task })}
+            </li>
+          )
+        })}
+      </ul>
+    )
   },
-}
+})
 </script>
 
 <style lang="scss" module>
@@ -181,16 +205,28 @@ export default {
   fill: #ababab;
 }
 
-.taskWrapper {
+.listWrapper {
+  width: 100%;
   display: flex;
   align-items: center;
+  flex-direction: column;
 }
 
-.ghost {
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.overlay {
   position: relative;
 }
 
-.ghost::after {
+.overlay::after {
   background-image: repeating-linear-gradient(
     45deg,
     #f4f5f7,
@@ -204,11 +240,6 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-}
-
-.ghost,
-.chosen {
-  cursor: grabbing;
 }
 
 .drag {

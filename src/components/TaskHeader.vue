@@ -21,9 +21,7 @@
       <div :class="$style.transferTodayIconWrapper">
         <TransferTodayIcon :class="$style.transferTodayIcon" />
       </div>
-      <span :class="$style.allCompletedText">
-        Transfer remaining tasks
-      </span>
+      <span :class="$style.allCompletedText">Transfer remaining tasks</span>
     </div>
     <SortSelector
       v-if="hasTask"
@@ -36,12 +34,14 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import AllCompletedIcon from '@assets/allcompleted.svg'
 import TransferTodayIcon from '@assets/transferToday.svg'
 
 import SortSelector from './SortSelector'
 
-export default {
+export default defineComponent({
   components: {
     AllCompletedIcon,
     TransferTodayIcon,
@@ -73,7 +73,7 @@ export default {
       required: true,
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

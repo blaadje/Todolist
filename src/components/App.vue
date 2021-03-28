@@ -79,14 +79,17 @@
             </template>
           </DraggableList>
           <div
-            v-if="currentTasks.completed.length && (status === 'all' || status === 'done')"
+            v-if="
+              currentTasks.completed.length &&
+              (status === 'all' || status === 'done')
+            "
             :class="$style.completedTasksWrapper"
           >
             <Divider>Done</Divider>
             <Task
               v-for="task in currentTasks.completed"
               :key="task.id"
-              :class="$style.completedTask"
+              :class="$style.task"
               :task="task"
               :tags="tags"
               :task-date-format="getFormat"
@@ -120,6 +123,7 @@
 import { ipcRenderer, remote } from 'electron'
 
 import ua from 'universal-analytics'
+import { defineComponent } from 'vue'
 
 import * as database from '@core/db/methods'
 import {
@@ -152,7 +156,7 @@ const ACTION_CREATE = 'action-create'
 const ACTION_DELETE = 'action-delete'
 const ACTION_EDIT = 'action-edit'
 
-export default {
+export default defineComponent({
   components: {
     Header,
     Filters,
@@ -243,7 +247,7 @@ export default {
         : { day: 'numeric', month: 'numeric', year: 'numeric' }
     },
     hasRemainingTask() {
-      return this.tasks.some(task => {
+      return this.tasks.some((task) => {
         return (
           new Date(formatDate(new Date(task.date))) <
             new Date(formatDate(this.today)) && !task.completed
@@ -255,13 +259,13 @@ export default {
     },
     taskedDays() {
       return this.tasks.reduce((acc, { date }) => {
-        if (Object.keys(acc).some(item => item === date)) {
+        if (Object.keys(acc).some((item) => item === date)) {
           return acc
         }
 
         const hasCompleted = this.tasks
-          .filter(task => task.date === date)
-          .every(task => task.completed)
+          .filter((task) => task.date === date)
+          .every((task) => task.completed)
 
         return {
           ...acc,
@@ -345,6 +349,7 @@ export default {
       database.getTasks(),
       database.getUserId(),
     ])
+
     this.tasks = tasks
       .slice()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -377,7 +382,7 @@ export default {
       this.selectedDate = decrementDay(this.selectedDate)
     },
     getFilteredTasks(tasks, status) {
-      const filteredTasks = tasks.filter(task =>
+      const filteredTasks = tasks.filter((task) =>
         this.selectedTags.length > 0
           ? task.tagId && this.selectedTags.includes(task.tagId)
           : true,
@@ -385,9 +390,9 @@ export default {
 
       switch (status) {
         case STATUS_DONE:
-          return filteredTasks.filter(task => task.completed)
+          return filteredTasks.filter((task) => task.completed)
         case STATUS_TODO:
-          return filteredTasks.filter(task => !task.completed)
+          return filteredTasks.filter((task) => !task.completed)
         default:
           return filteredTasks
       }
@@ -419,7 +424,7 @@ export default {
       }
     },
     getTasksByDate(tasks, date = this.selectedDate) {
-      return tasks.filter(task =>
+      return tasks.filter((task) =>
         this.filter === FILTER_DATE
           ? areDatesEqual(new Date(task.date), date)
           : true,
@@ -460,7 +465,7 @@ export default {
       this.activeSort = this.sortBy.find(({ value }) => value === sort)
     },
     transferRemainingTasks() {
-      this.tasks = this.tasks.map(task => {
+      this.tasks = this.tasks.map((task) => {
         if (
           getTimeStampFromDate(new Date(task.date)) >=
             getTimeStampFromDate(this.today) ||
@@ -484,9 +489,9 @@ export default {
       }
 
       const withoutselectedTags = this.selectedTags.filter(
-        item => item !== tagId,
+        (item) => item !== tagId,
       )
-      const tagToAdd = this.selectedTags.find(tag => tag === tagId)
+      const tagToAdd = this.selectedTags.find((tag) => tag === tagId)
 
       this.selectedTags = !tagToAdd
         ? [...withoutselectedTags, tagId]
@@ -512,9 +517,10 @@ export default {
 
       d += window.performance.now()
 
-      return format.replace(/[xy]/g, c => {
+      return format.replace(/[xy]/g, (c) => {
         // eslint-disable-next-line no-bitwise
         const r = (d + Math.random() * 16) % 16 | 0
+
         d = Math.floor(d / 16)
 
         // eslint-disable-next-line no-bitwise
@@ -524,7 +530,7 @@ export default {
     toggleAllCompleted() {
       const getCompletedTasks = () => {
         if (!this.selectedDateView) {
-          return this.tasks.map(task => {
+          return this.tasks.map((task) => {
             return {
               ...task,
               completed: !this.areTasksAllDone,
@@ -532,7 +538,7 @@ export default {
           })
         }
 
-        return this.tasks.map(task => {
+        return this.tasks.map((task) => {
           if (!areDatesEqual(new Date(task.date), this.selectedDate)) {
             return task
           }
@@ -543,6 +549,7 @@ export default {
           }
         })
       }
+
       this.tasks = getCompletedTasks()
 
       database.toggleAllTaskCompleted(this.selectedDate, this.areTasksAllDone)
@@ -572,6 +579,7 @@ export default {
         tagId,
         completed: false,
       }
+
       this.tasks = [...this.tasks, task]
       database.addTask(task)
     },
@@ -581,7 +589,7 @@ export default {
       database.deleteTask(taskId)
     },
     toggleTaskCompleted(taskId) {
-      this.tasks = this.tasks.map(task => {
+      this.tasks = this.tasks.map((task) => {
         if (task.id !== taskId) {
           return task
         }
@@ -594,14 +602,14 @@ export default {
       database.toggleTaskCompleted(taskId)
     },
     editTask(editedTask) {
-      this.tasks = this.tasks.map(task =>
+      this.tasks = this.tasks.map((task) =>
         task.id === editedTask.id ? editedTask : task,
       )
       this.user.event(CATEGORY_TASK, ACTION_EDIT).send()
       database.editTask(editedTask)
     },
     editTasks(editedTasks) {
-      this.tasks = this.tasks.map(task => {
+      this.tasks = this.tasks.map((task) => {
         const editedTask = editedTasks.find(({ id }) => id === task.id) || false
 
         return editedTask || task
@@ -610,7 +618,7 @@ export default {
       database.editTasks(editedTasks)
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>
@@ -703,10 +711,6 @@ ul {
 
 .task {
   flex: 1;
-}
-
-.completedTask {
-  padding: 1rem 1rem;
 }
 
 .taskHeader {

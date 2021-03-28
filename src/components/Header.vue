@@ -45,25 +45,23 @@
         </template>
       </Tooltip>
     </div>
-    <keep-alive>
-      <DatePicker
-        v-if="datePickerVisible"
-        v-click-outside="hideDatePicker"
-        :class="$style.datePicker"
-        :colors="colors"
-        :selected-date="selectedDate"
-        :tasked-days="taskedDays"
-        @close="datePickerVisible = false"
-        @selectedDate="handleSelectedDate"
-      />
-    </keep-alive>
+    <DatePicker
+      v-if="datePickerVisible"
+      v-click-outside="hideDatePicker"
+      :class="$style.datePicker"
+      :colors="colors"
+      :selected-date="selectedDate"
+      :tasked-days="taskedDays"
+      @close="datePickerVisible = false"
+      @selectedDate="handleSelectedDate"
+    />
     <Transition name="slideUp">
       <div
         v-if="sketchVisible"
         v-click-outside="hideSketchPicker"
         :class="$style.sketchWrapper"
       >
-        <Sketch :class="$style.sketch" :value="colors" @input="handleSketch" />
+        <Sketch v-model="stateColors" :class="$style.sketch" />
         <Button filled :color="colors.hex" @click="handleColorSave">
           Save
         </Button>
@@ -73,7 +71,8 @@
 </template>
 
 <script>
-import { Sketch } from 'vue-color'
+import { Sketch } from '@ckpack/vue-color'
+import { defineComponent } from 'vue'
 
 import CheckIcon from '@assets/check.svg'
 import ClipboardIcon from '@assets/clipboard.svg'
@@ -84,7 +83,7 @@ import Button from './Button'
 import DatePicker from './DatePicker'
 import Tooltip from './Tooltip'
 
-export default {
+export default defineComponent({
   components: {
     DatePicker,
     Sketch,
@@ -118,7 +117,19 @@ export default {
       datePickerVisible: false,
       isExported: false,
       timeout: null,
+      stateColors: null,
     }
+  },
+  watch: {
+    colors: {
+      handler(value) {
+        this.stateColors = value
+      },
+      immediate: true,
+    },
+    stateColors(value) {
+      this.$emit('setSelectedColor', value)
+    },
   },
   computed: {
     formattedSelectedDate() {
@@ -145,9 +156,6 @@ export default {
         this.isExported = false
       }, 2000)
     },
-    handleSketch(color) {
-      return this.$emit('setSelectedColor', color)
-    },
     handleColorSave() {
       this.sketchVisible = false
       this.$emit('saveColor')
@@ -156,7 +164,7 @@ export default {
       return this.$emit('setSelectedDate', date)
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>
