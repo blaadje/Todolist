@@ -144,15 +144,14 @@ export default {
     },
   },
   watch: {
-    selectedDate(newValue, prevValue) {
-      this.localSelectedDate = newValue
-      this.previewDate = newValue
+    selectedDate: {
+      handler(newValue) {
+        this.localSelectedDate = newValue
+        this.previewDate = newValue
 
-      if (newValue.getMonth() !== prevValue.getMonth()) {
-        return
-      }
-
-      this.$emit('isTodayDisabled', isToday(newValue))
+        this.$emit('isTodayDisabled', isToday(newValue))
+      },
+      immediate: true,
     },
     previewDate(newPreviewDate, oldPreviewDate) {
       if (newPreviewDate.getMonth() === oldPreviewDate.getMonth()) {
