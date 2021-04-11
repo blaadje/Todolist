@@ -50,7 +50,7 @@ module.exports = {
           // This loader compiles .svg file to .vue file
           // So we use `vue-loader` after it
           'vue-loader',
-          'svg-to-vue-component/loader',
+          'vue-svg-loader',
         ],
       },
       {
