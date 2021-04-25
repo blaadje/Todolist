@@ -7,14 +7,16 @@
       border: filled ? '' : `1px solid ${color}`,
     }"
     :disabled="disabled"
-    v-on="$listeners"
+    v-on="$attrs"
   >
     <slot />
   </button>
 </template>
 
 <script>
-export default {
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   props: {
     color: {
       type: String,
@@ -29,7 +31,7 @@ export default {
       default: false,
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

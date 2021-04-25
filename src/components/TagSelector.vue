@@ -16,13 +16,15 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import DownArrowIcon from '@assets/downArrow.svg'
 
 import Paper from './Paper'
 import Pellet from './Pellet'
 import TagList from './TagList'
 
-export default {
+export default defineComponent({
   components: {
     DownArrowIcon,
     TagList,
@@ -57,7 +59,7 @@ export default {
       this.$emit('selectedTag', tagId)
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

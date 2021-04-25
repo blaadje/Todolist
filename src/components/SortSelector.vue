@@ -23,12 +23,14 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import CheckIcon from '@assets/check.svg'
 import SortIcon from '@assets/sort.svg'
 
 import Paper from './Paper'
 
-export default {
+export default defineComponent({
   components: {
     CheckIcon,
     SortIcon,
@@ -63,7 +65,7 @@ export default {
       this.isVisible = false
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

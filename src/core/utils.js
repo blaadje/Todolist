@@ -1,13 +1,14 @@
-const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time))
+const sleep = (time) =>
+  new Promise((resolve) => setTimeout(() => resolve(), time))
 
-const getWeekFromDate = date => {
+const getWeekFromDate = (date) => {
   const dayMiliseconds = 86400000
   const onejan = new Date(date.getFullYear(), 0, 1)
 
   return Math.ceil(((date - onejan) / dayMiliseconds + onejan.getDay() + 1) / 7)
 }
 
-const getTimeStampFromDate = date => {
+const getTimeStampFromDate = (date) => {
   return Date.parse(date) / 1000
 }
 
@@ -26,7 +27,7 @@ const areDatesEqual = (date1, date2) => {
   )
 }
 
-const isToday = day => {
+const isToday = (day) => {
   return areDatesEqual(day, new Date())
 }
 

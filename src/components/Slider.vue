@@ -1,10 +1,6 @@
-<template>
-  <div ref="wrapper" :class="$style.wrapper">
-    <slot />
-  </div>
-</template>
-
 <script>
+import { defineComponent } from 'vue'
+
 import { sleep } from '@core/utils'
 
 const UPDATE_LEFT = 'update-left'
@@ -20,28 +16,39 @@ let newEvent = null
 let oldDelta = null
 let oldDraggingPosition = 0
 
-export default {
+export default defineComponent({
+  render() {
+    this.slots = this.$slots.default()
+
+    return (
+      <div ref="wrapper" class={this.$style.wrapper}>
+        {this.slots}
+      </div>
+    )
+  },
   mounted() {
-    if (this.$slots.default.length !== 3) {
+    const elements = this.slots[0].children
+
+    if (elements.length !== 3) {
       throw new Error(
         'This component allows 3 children : previous, current, next',
       )
     }
 
-    const [prevElement, , nextElement] = this.$slots.default
+    const [prevElement, , nextElement] = elements
 
-    prevElement.elm.style.height = '0px'
-    nextElement.elm.style.height = '0px'
+    prevElement.el.style.height = '0px'
+    nextElement.el.style.height = '0px'
 
-    this.$slots.default.forEach(element => {
+    elements.forEach((element) => {
       const { offsetWidth } = this.$refs.wrapper
 
       // eslint-disable-next-line no-param-reassign
-      element.elm.style.width = `${offsetWidth}px`
+      element.el.style.width = `${offsetWidth}px`
       // eslint-disable-next-line no-param-reassign
-      element.elm.style.flexShrink = '0'
+      element.el.style.flexShrink = '0'
       // eslint-disable-next-line no-param-reassign
-      element.elm.style.transform = `translateX(-${offsetWidth}px)`
+      element.el.style.transform = `translateX(-${offsetWidth}px)`
     })
 
     window.addEventListener('resize', this.handleResize)
@@ -54,7 +61,7 @@ export default {
   activated() {
     this.handleResize()
   },
-  destroyed() {
+  beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
   methods: {
@@ -64,7 +71,7 @@ export default {
     },
     addMouseMoveEvent(event) {
       const isClickOnDraggingHandler = event.path.some(
-        item =>
+        (item) =>
           item.className &&
           item.className.baseVal &&
           item.className.baseVal &&
@@ -104,13 +111,13 @@ export default {
       clearTimeout(time)
       clearTimeout(time2)
 
-      const elements = this.$slots.default
+      const elements = this.slots[0].children
       const { wrapper } = this.$refs
       const { offsetWidth } = wrapper
       const start = wrapper.getBoundingClientRect().left
       const end = wrapper.getBoundingClientRect().right
       const scrollingElementMiddlePosition = this.getMiddlePosition(
-        elements[1].elm,
+        elements[1].el,
       )
       const state = this.getDirection(
         scrollingElementMiddlePosition,
@@ -121,10 +128,11 @@ export default {
       transform += movement
 
       if (state === UPDATE_CANCELLED) {
-        elements.forEach(element => {
+        elements.forEach((element) => {
           // eslint-disable-next-line no-param-reassign
-          element.elm.style.transform = `translateX(${-offsetWidth -
-            transform}px)`
+          element.el.style.transform = `translateX(${
+            -offsetWidth - transform
+          }px)`
         })
 
         time = setTimeout(() => {
@@ -152,31 +160,32 @@ export default {
     },
     handleResize() {
       const { offsetWidth } = this.$refs.wrapper
+      const elements = this.slots[0].children
 
-      this.$slots.default.forEach(element => {
+      elements.forEach((element) => {
         // eslint-disable-next-line no-param-reassign
-        element.elm.style.width = `${offsetWidth}px`
+        element.el.style.width = `${offsetWidth}px`
         // eslint-disable-next-line no-param-reassign
-        element.elm.style.transform = `translateX(-${offsetWidth}px)`
+        element.el.style.transform = `translateX(-${offsetWidth}px)`
       })
     },
     async translateElementToFuturePosition(state, elements, offsetWidth) {
-      elements.forEach(element => {
+      elements.forEach((element) => {
         // eslint-disable-next-line no-param-reassign
-        element.elm.style.transition = `transform ${ANIMATION_DURATION}ms ease-in-out`
+        element.el.style.transition = `transform ${ANIMATION_DURATION}ms ease-in-out`
 
         switch (state) {
           case UPDATE_LEFT:
             // eslint-disable-next-line no-param-reassign
-            element.elm.style.transform = `translateX(0)`
+            element.el.style.transform = `translateX(0)`
             break
           case UPDATE_RIGHT:
             // eslint-disable-next-line no-param-reassign
-            element.elm.style.transform = `translateX(-${offsetWidth * 2}px)`
+            element.el.style.transform = `translateX(-${offsetWidth * 2}px)`
             break
           case UPDATE_CANCELLED:
             // eslint-disable-next-line no-param-reassign
-            element.elm.style.transform = `translateX(-${offsetWidth}px)`
+            element.el.style.transform = `translateX(-${offsetWidth}px)`
             break
           default:
         }
@@ -185,11 +194,11 @@ export default {
 
       transform = 0
 
-      elements.forEach(element => {
+      elements.forEach((element) => {
         // eslint-disable-next-line no-param-reassign
-        element.elm.style.transition = 'none'
+        element.el.style.transition = 'none'
         // eslint-disable-next-line no-param-reassign
-        element.elm.style.transform = `translateX(-${offsetWidth}px)`
+        element.el.style.transform = `translateX(-${offsetWidth}px)`
       })
 
       if (state === UPDATE_CANCELLED) {
@@ -223,7 +232,7 @@ export default {
       return null
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

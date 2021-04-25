@@ -14,9 +14,11 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import Pellet from './Pellet'
 
-export default {
+export default defineComponent({
   components: {
     Pellet,
   },
@@ -34,7 +36,7 @@ export default {
       required: true,
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

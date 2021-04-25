@@ -1,7 +1,7 @@
 const path = require('path')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const { VueLoaderPlugin } = require('vue-loader')
 
 module.exports = {
   resolve: {
@@ -33,6 +33,10 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+      },
       {
         test: /\.svg$/,
         include: path.resolve(__dirname, '../src/renderer/images'),
@@ -76,12 +80,6 @@ module.exports = {
           },
           'sass-loader',
         ],
-      },
-      {
-        test: /\.vue$/,
-        use: {
-          loader: 'vue-loader',
-        },
       },
     ],
   },

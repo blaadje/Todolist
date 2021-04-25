@@ -27,7 +27,7 @@ function pack(config) {
             colors: true,
           })
           .split(/\r?\n/)
-          .forEach(line => {
+          .forEach((line) => {
             error += `    ${line}\n`
           })
 
@@ -85,11 +85,11 @@ function build() {
   })
 
   pack(main)
-    .then(result => {
+    .then((result) => {
       results += `${result}\n\n`
       m.success('main')
     })
-    .catch(err => {
+    .catch((err) => {
       m.error('main')
       console.log(`\n  ${errorLog}failed to build main process`)
       console.error(`\n${err}\n`)
@@ -97,11 +97,11 @@ function build() {
     })
 
   pack(renderer)
-    .then(result => {
+    .then((result) => {
       results += `${result}\n\n`
       m.success('renderer')
     })
-    .catch(err => {
+    .catch((err) => {
       m.error('renderer')
       console.log(`\n  ${errorLog}failed to build renderer process`)
       console.error(`\n${err}\n`)

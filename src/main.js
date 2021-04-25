@@ -1,10 +1,11 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
+
 const { autoUpdater } = require('electron-updater')
 
 let mainWindow
 const port = process.env.PORT || 8080
 
-autoUpdater.on('update-available', information => {
+autoUpdater.on('update-available', (information) => {
   mainWindow.webContents.send('update-available', { state: true, information })
 })
 
@@ -22,7 +23,7 @@ ipcMain.on('open-release-link', (event, url) => {
   shell.openExternal(url)
 })
 
-autoUpdater.on('download-progress', progressObj => {
+autoUpdater.on('download-progress', (progressObj) => {
   mainWindow.webContents.send('download-progress', progressObj)
 })
 
@@ -49,7 +50,7 @@ function createWindow() {
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
     },
   })
 

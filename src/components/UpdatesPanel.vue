@@ -29,9 +29,7 @@
           <Button v-if="updates.downloaded" @click="handleInstall">
             Install
           </Button>
-          <span v-if="!updates.downloaded">
-            Downloading...
-          </span>
+          <span v-if="!updates.downloaded">Downloading...</span>
         </div>
       </div>
     </div>
@@ -39,15 +37,16 @@
 </template>
 
 <script>
-
 import { ipcRenderer } from 'electron'
+
+import { defineComponent } from 'vue'
 
 import DownloadIcon from '@assets/download.svg'
 
 import Button from './Button'
 import ProgressBar from './ProgressBar'
 
-export default {
+export default defineComponent({
   components: {
     DownloadIcon,
     ProgressBar,
@@ -78,7 +77,7 @@ export default {
       this.updatesPanelVisible = !this.updatesPanelVisible
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>

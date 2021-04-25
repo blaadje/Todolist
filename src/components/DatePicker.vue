@@ -52,13 +52,15 @@
 </template>
 
 <script>
+import { defineComponent } from 'vue'
+
 import { getWeekFromDate, formatDate, incrementDay } from '@core/utils'
 
 import Button from './Button'
 import Calendar from './Calendar'
 import Paper from './Paper'
 
-export default {
+export default defineComponent({
   components: {
     Calendar,
     Button,
@@ -121,7 +123,7 @@ export default {
       this.$emit('selectedDate', incrementDay(today, 8 - today.getDay()))
     },
   },
-}
+})
 </script>
 
 <style lang="scss" module>
