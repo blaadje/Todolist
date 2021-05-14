@@ -1,88 +1,16 @@
-<template>
-  <div>
-    <div :class="$style.month">
-      <LeftArrowIcon :class="$style.leftArrowIcon" @click="setPreviousMonth" />
-      <LeftArrowIcon :class="$style.rightArrowIcon" @click="setNextMonth" />
-      {{ formattedMonth }}
-    </div>
-    <div :class="$style.calendar">
-      <div :class="$style.daysNameBackground">
-        <div :class="$style.daysNameWrapper">
-          <div
-            v-for="dayName in daysName"
-            :key="`${dayName}-daysName`"
-            :class="$style.day"
-            :style="{ width: `${daySize}px`, height: `${daySize}px` }"
-          >
-            {{ dayName }}
-          </div>
-        </div>
-      </div>
-      <div ref="calendar" :class="$style.sliderWrapper">
-        <Slider
-          :class="$style.slider"
-          @increment="setNextMonth"
-          @decrement="setPreviousMonth"
-        >
-          <div
-            v-for="({ previousDays, days }, index) in getDisplayedMonths"
-            :key="index"
-            :class="$style.daysLabels"
-          >
-            <div
-              v-for="previousDay in previousDays"
-              :key="`${previousDay}-${index}-previousDays`"
-              :class="[$style.day, $style.previous]"
-              :style="{ width: `${daySize}px`, height: `${daySize}px` }"
-            >
-              {{ previousDay.getDate() }}
-            </div>
-            <div
-              v-for="day in days"
-              :key="`${day}-${index}-days`"
-              :class="[
-                $style.day,
-                $style.selectableDay,
-                { [$style.isSelected]: isSelectedDay(day) },
-              ]"
-              :style="{ width: `${daySize}px`, height: `${daySize}px` }"
-              @click="selectDay(day)"
-            >
-              <span
-                :class="[$style.overlay, $style.hoverOverlay]"
-                :style="{ background: colors.hex }"
-              />
-              <span
-                v-if="isToday(day)"
-                :class="[$style.overlay, $style.todayOverlay]"
-              />
-              <span
-                v-if="dayHasLabel(day)"
-                :class="[
-                  $style.dayHasLabelOverlay,
-                  {
-                    [$style.isCompleted]: dayHasLabel(day).completed,
-                  },
-                ]"
-              />
-              <span
-                v-if="isSelectedDay(day)"
-                :class="[$style.overlay, $style.selectedOverlay]"
-                :style="{ background: colors.hex }"
-              />
-              <span :class="$style.label">{{ day.getDate() }}</span>
-            </div>
-          </div>
-        </Slider>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import {
+  computed,
+  defineComponent,
+  ref,
+  onMounted,
+  toRefs,
+  useCssModule,
+  watch,
+} from 'vue'
 
 import LeftArrowIcon from '@assets/leftArrow.svg'
+import useState from '@core/hooks/useState'
 import {
   formatDate,
   areDatesEqual,
@@ -96,11 +24,6 @@ import {
 import Slider from './Slider'
 
 export default defineComponent({
-  name: 'App',
-  components: {
-    Slider,
-    LeftArrowIcon,
-  },
   props: {
     colors: {
       type: Object,
@@ -115,102 +38,194 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      daysName: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
-      previewDate: new Date(),
-      localSelectedDate: new Date(),
-      daySize: 0,
-    }
-  },
-  computed: {
-    isToday: () => isToday,
-    getDisplayedMonths() {
-      return [
-        this.getDays(this.getMonth - 1),
-        this.getDays(this.getMonth),
-        this.getDays(this.getMonth + 1),
-      ]
-    },
-    formattedMonth() {
-      return formatDate(this.previewDate, {
-        month: 'long',
-        year: 'numeric',
-      })
-    },
-    getMonth() {
-      return this.previewDate.getMonth() + 1
-    },
-    getYear() {
-      return this.previewDate.getFullYear()
-    },
-  },
-  watch: {
-    selectedDate: {
-      handler(newValue) {
-        this.localSelectedDate = newValue
-        this.previewDate = newValue
+  setup(props, { emit }) {
+    const calendarRef = ref(null)
+    const { colors, labelsByDay, selectedDate } = toRefs(props)
+    const style = useCssModule()
+    const daysName = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
-        this.$emit('isTodayDisabled', isToday(newValue))
-      },
-      immediate: true,
-    },
-    previewDate(newPreviewDate, oldPreviewDate) {
-      if (newPreviewDate.getMonth() === oldPreviewDate.getMonth()) {
-        return
-      }
+    const [previewDate, setPreviewDate] = useState(selectedDate.value)
+    const [localSelectedDate, setLocalSelectedDate] = useState(
+      selectedDate.value,
+    )
+    const [daySize, setDaySize] = useState(0)
 
-      const currentMonth = new Date().getMonth()
-
-      this.$emit('isTodayDisabled', currentMonth === newPreviewDate.getMonth())
-    },
-  },
-  mounted() {
-    this.setDaySize()
-  },
-  methods: {
-    dayHasLabel(day) {
-      return this.labelsByDay[formatDate(day)]
-    },
-    getDays(month) {
-      const daysInMonth = new Date(this.getYear, month, 0).getDate()
-      const endDate = new Date(this.getYear, month - 1, 0)
-      const startDate = incrementDay(new Date(this.getYear, month - 1, 0))
+    const getMonth = computed(() => previewDate.value.getMonth() + 1)
+    const getYear = computed(() => previewDate.value.getFullYear())
+    const getDays = (month) => {
+      const daysInMonth = new Date(getYear.value, month, 0).getDate()
+      const endDate = new Date(getYear.value, month - 1, 0)
+      const startDate = incrementDay(new Date(getYear.value, month - 1, 0))
 
       return {
-        previousDays: Array.from({ length: endDate.getDay() }, (_, index) => {
-          return decrementDay(endDate, index)
-        }).reverse(),
-        days: Array.from({ length: daysInMonth }, (_, index) => {
-          return incrementDay(startDate, index)
-        }),
+        previousDays: Array.from({ length: endDate.getDay() }, (_, index) =>
+          decrementDay(endDate, index),
+        ).reverse(),
+        days: Array.from({ length: daysInMonth }, (_, index) =>
+          incrementDay(startDate, index),
+        ),
       }
-    },
-    isSelectedDay(day) {
-      return areDatesEqual(day, this.localSelectedDate)
-    },
-    setNextMonth() {
-      this.previewDate = incrementMonth(this.previewDate)
-    },
-    setPreviousMonth() {
-      this.previewDate = decrementMonth(this.previewDate)
-    },
-    selectDay(day) {
+    }
+    const getDisplayedMonths = computed(() => [
+      getDays(getMonth.value - 1),
+      getDays(getMonth.value),
+      getDays(getMonth.value + 1),
+    ])
+    const formattedMonth = computed(() =>
+      formatDate(previewDate.value, {
+        month: 'long',
+        year: 'numeric',
+      }),
+    )
+
+    const dayHasLabel = (day) =>
+      computed(() => labelsByDay.value[formatDate(day)])
+    const isSelectedDay = (day) =>
+      computed(() => areDatesEqual(day, localSelectedDate.value))
+
+    const setNextMonth = () => {
+      const date = incrementMonth(previewDate.value)
+
+      setPreviewDate(date)
+      emit('previewDateUpdate', date)
+    }
+
+    const setPreviousMonth = () => {
+      const date = decrementMonth(previewDate.value)
+
+      setPreviewDate(date)
+      emit('previewDateUpdate', date)
+    }
+
+    const selectDay = (day) => {
       const updatedDay = isToday(day) ? new Date() : day
 
-      this.localSelectedDate = updatedDay
-      this.$emit('setSelectedDate', updatedDay)
-    },
-    setDaySize() {
+      setLocalSelectedDate(updatedDay)
+      emit('selectedDateUpdate', updatedDay)
+    }
+
+    watch(
+      () => props.selectedDate,
+      (value) => {
+        setLocalSelectedDate(value)
+        setPreviewDate(value)
+      },
+    )
+
+    onMounted(() => {
       const daysInWeek = 7
 
-      const element = this.$refs.calendar
+      const element = calendarRef.value
       const padding = Number(
         getComputedStyle(element).paddingLeft.split('px')[0],
       )
 
-      this.daySize = (element.clientWidth - padding * 2) / daysInWeek
-    },
+      setDaySize((element.clientWidth - padding * 2) / daysInWeek)
+    })
+
+    return () => (
+      <div>
+        <div class={style.month}>
+          <LeftArrowIcon
+            class={style.leftArrowIcon}
+            onClick={setPreviousMonth}
+          />
+          <LeftArrowIcon class={style.rightArrowIcon} onClick={setNextMonth} />
+          {formattedMonth.value}
+        </div>
+        <div class={style.calendar}>
+          <div class={style.daysNameBackground}>
+            <div class={style.daysNameWrapper}>
+              {daysName.map((dayName) => {
+                return (
+                  <div
+                    key={`${dayName}-daysName`}
+                    class={style.day}
+                    style={{
+                      width: `${daySize.value}px`,
+                      height: `${daySize.value}px`,
+                    }}
+                  >
+                    {dayName}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div ref={calendarRef} class={style.sliderWrapper}>
+            <Slider
+              class={style.slider}
+              onIncrement={setNextMonth}
+              onDecrement={setPreviousMonth}
+            >
+              {getDisplayedMonths.value.map(({ previousDays, days }, index) => {
+                return (
+                  <div key={index} class={style.daysLabels}>
+                    {previousDays.map((previousDay) => {
+                      return (
+                        <div
+                          key={`${previousDay}-${index}-previousDays`}
+                          class={[style.day, style.previous]}
+                          style={{
+                            width: `${daySize.value}px`,
+                            height: `${daySize.value}px`,
+                          }}
+                        >
+                          {previousDay.getDate()}
+                        </div>
+                      )
+                    })}
+                    {days.map((day) => {
+                      return (
+                        <div
+                          key={`${day}-${index}-days`}
+                          class={[
+                            style.day,
+                            style.selectableDay,
+                            { [style.isSelected]: isSelectedDay(day).value },
+                          ]}
+                          style={{
+                            width: `${daySize.value}px`,
+                            height: `${daySize.value}px`,
+                          }}
+                          onClick={() => selectDay(day)}
+                        >
+                          <span
+                            class={[style.overlay, style.hoverOverlay]}
+                            style={{ background: colors.value.hex }}
+                          />
+                          {isToday(day) && (
+                            <span class={[style.overlay, style.todayOverlay]} />
+                          )}
+                          {dayHasLabel(day).value && (
+                            <span
+                              class={[
+                                style.dayHasLabelOverlay,
+                                {
+                                  [style.isCompleted]: dayHasLabel(day).value
+                                    .completed,
+                                },
+                              ]}
+                            />
+                          )}
+                          {isSelectedDay(day).value && (
+                            <span
+                              class={[style.overlay, style.selectedOverlay]}
+                              style={{ background: colors.value.hex }}
+                            />
+                          )}
+                          <span class={style.label}>{day.getDate()}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </Slider>
+          </div>
+        </div>
+      </div>
+    )
   },
 })
 </script>

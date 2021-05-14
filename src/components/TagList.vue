@@ -1,27 +1,9 @@
-<template>
-  <div :class="[$style.wrapper, { [$style.vertical]: !horizontal }]">
-    <Pellet @click.native="$emit('selectedTag')" />
-    <Pellet
-      v-for="tag in tags"
-      :key="tag.id"
-      :class="{
-        [$style.selected]: selectedTags && selectedTags.includes(tag.id),
-      }"
-      :background="tag.color"
-      @click.native="$emit('selectedTag', tag.id)"
-    />
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 import Pellet from './Pellet'
 
 export default defineComponent({
-  components: {
-    Pellet,
-  },
   props: {
     horizontal: {
       type: Boolean,
@@ -35,6 +17,29 @@ export default defineComponent({
       type: Array,
       required: true,
     },
+  },
+  setup(props, { emit }) {
+    const { horizontal, selectedTags, tags } = toRefs(props)
+    const style = useCssModule()
+
+    return () => (
+      <div class={[style.wrapper, { [style.vertical]: !horizontal.value }]}>
+        <Pellet onClick={() => emit('selectedTag')} />
+        {tags.value.map(({ id, color }) => {
+          return (
+            <Pellet
+              key={id}
+              class={{
+                [style.selected]:
+                  selectedTags.value && selectedTags.value.includes(id),
+              }}
+              background={color}
+              onClick={() => emit('selectedTag', id)}
+            />
+          )
+        })}
+      </div>
+    )
   },
 })
 </script>

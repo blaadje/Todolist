@@ -1,82 +1,18 @@
-<template>
-  <header :class="$style.wrapper">
-    <Tooltip>
-      <template #trigger>
-        <span :class="$style.dateFormatted" @click="datePickerVisible = true">
-          {{ formattedSelectedDate }}
-        </span>
-      </template>
-      <template #content>
-        <span>Calendar</span>
-      </template>
-    </Tooltip>
-    <div :class="$style.icons">
-      <Tooltip>
-        <template #trigger>
-          <ColorPickerIcon :class="$style.icon" @click="sketchVisible = true" />
-        </template>
-        <template #content>
-          <span>Color picker</span>
-        </template>
-      </Tooltip>
-      <Tooltip :disabled="isExported">
-        <template #trigger>
-          <ClipboardIcon
-            v-if="!isExported"
-            :class="$style.icon"
-            @click="handleExportTask"
-          />
-          <div v-if="isExported" :class="$style.checkIconWrapper">
-            <Tooltip appearance="success">
-              <template #trigger>
-                <CheckIcon
-                  :class="[$style.icon, $style.checkIcon]"
-                  @click="handleExportTask"
-                />
-              </template>
-              <template #content>
-                <span>Copied in clipboard!</span>
-              </template>
-            </Tooltip>
-          </div>
-        </template>
-        <template #content>
-          <span>Export tasks</span>
-        </template>
-      </Tooltip>
-    </div>
-    <DatePicker
-      v-if="datePickerVisible"
-      v-click-outside="hideDatePicker"
-      :class="$style.datePicker"
-      :colors="colors"
-      :selected-date="selectedDate"
-      :tasked-days="taskedDays"
-      @close="datePickerVisible = false"
-      @selectedDate="handleSelectedDate"
-    />
-    <Transition name="slideUp">
-      <div
-        v-if="sketchVisible"
-        v-click-outside="hideSketchPicker"
-        :class="$style.sketchWrapper"
-      >
-        <Sketch v-model="stateColors" :class="$style.sketch" />
-        <Button filled :color="colors.hex" @click="handleColorSave">
-          Save
-        </Button>
-      </div>
-    </Transition>
-  </header>
-</template>
-
 <script>
 import { Sketch } from '@ckpack/vue-color'
-import { defineComponent } from 'vue'
+import {
+  defineComponent,
+  toRefs,
+  watch,
+  useCssModule,
+  Transition,
+  computed,
+} from 'vue'
 
 import CheckIcon from '@assets/check.svg'
 import ClipboardIcon from '@assets/clipboard.svg'
 import ColorPickerIcon from '@assets/color-picker.svg'
+import useState from '@core/hooks/useState'
 import { formatDate } from '@core/utils'
 
 import Button from './Button'
@@ -84,20 +20,7 @@ import DatePicker from './DatePicker'
 import Tooltip from './Tooltip'
 
 export default defineComponent({
-  components: {
-    DatePicker,
-    Sketch,
-    ColorPickerIcon,
-    ClipboardIcon,
-    CheckIcon,
-    Button,
-    Tooltip,
-  },
   props: {
-    tags: {
-      type: Array,
-      required: true,
-    },
     colors: {
       type: Object,
       required: true,
@@ -111,58 +34,131 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      sketchVisible: false,
-      datePickerVisible: false,
-      isExported: false,
-      timeout: null,
-      stateColors: null,
+  setup(props, { emit }) {
+    let timeout = null
+    const { colors, selectedDate, taskedDays } = toRefs(props)
+    const [isSketchVisible, setSketchVisible] = useState(false)
+    const [stateColors, setStateColors] = useState(colors.value)
+    const [isExported, setExported] = useState(false)
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false)
+    const style = useCssModule()
+
+    watch(
+      () => colors,
+      (value) => setStateColors(value),
+    )
+
+    const handleColorUpdate = (value) => emit('setSelectedColor', value)
+    const handleExportTask = () => {
+      clearTimeout(timeout)
+
+      setExported(true)
+      emit('exportTasks')
+
+      timeout = setTimeout(() => setExported(false), 2000)
     }
-  },
-  watch: {
-    colors: {
-      handler(value) {
-        this.stateColors = value
-      },
-      immediate: true,
-    },
-    stateColors(value) {
-      this.$emit('setSelectedColor', value)
-    },
-  },
-  computed: {
-    formattedSelectedDate() {
-      return formatDate(this.selectedDate, {
+    const handleColorSave = () => {
+      setSketchVisible(false)
+      emit('saveColor')
+    }
+    const handleSelectedDate = (date) => emit('setSelectedDate', date)
+
+    const formattedSelectedDate = computed(() => {
+      return formatDate(selectedDate.value, {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
       })
-    },
-  },
-  methods: {
-    hideSketchPicker() {
-      this.sketchVisible = false
-    },
-    hideDatePicker() {
-      this.datePickerVisible = false
-    },
-    handleExportTask() {
-      clearTimeout(this.timeout)
+    })
 
-      this.isExported = true
-      this.$emit('exportTasks')
-      this.timeout = setTimeout(() => {
-        this.isExported = false
-      }, 2000)
-    },
-    handleColorSave() {
-      this.sketchVisible = false
-      this.$emit('saveColor')
-    },
-    handleSelectedDate(date) {
-      return this.$emit('setSelectedDate', date)
-    },
+    return () => (
+      <header class={style.wrapper}>
+        <Tooltip>
+          {{
+            trigger: () => (
+              <span
+                class={style.dateFormatted}
+                onClick={() => setDatePickerVisible(true)}
+              >
+                {formattedSelectedDate.value}
+              </span>
+            ),
+            content: () => <span>Calendar</span>,
+          }}
+        </Tooltip>
+        <div class={style.icons}>
+          <Tooltip>
+            {{
+              trigger: () => (
+                <ColorPickerIcon
+                  class={style.icon}
+                  onClick={() => setSketchVisible(true)}
+                />
+              ),
+              content: () => <span>Color picker</span>,
+            }}
+          </Tooltip>
+          <Tooltip disabled={isExported.value}>
+            {{
+              trigger: () => (
+                <div>
+                  {!isExported.value && (
+                    <ClipboardIcon
+                      class={style.icon}
+                      onClick={handleExportTask}
+                    />
+                  )}
+                  {isExported.value && (
+                    <div class={style.checkIconWrapper}>
+                      <Tooltip appearance="success">
+                        {{
+                          trigger: () => (
+                            <CheckIcon
+                              class={[style.icon, style.checkIcon]}
+                              onClick={handleExportTask}
+                            />
+                          ),
+                          content: () => <span>Copied in clipboard!</span>,
+                        }}
+                      </Tooltip>
+                    </div>
+                  )}
+                </div>
+              ),
+              content: () => <span>Export tasks</span>,
+            }}
+          </Tooltip>
+        </div>
+        {isDatePickerVisible.value && (
+          <DatePicker
+            v-click-outside={() => setDatePickerVisible(false)}
+            class={style.datePicker}
+            colors={colors.value}
+            selected-date={selectedDate.value}
+            tasked-days={taskedDays.value}
+            oncClose={() => setDatePickerVisible(false)}
+            onSelectedDate={handleSelectedDate}
+          />
+        )}
+        <Transition name="slideUp">
+          {isSketchVisible.value && (
+            <div
+              v-click-outside={() => setSketchVisible(false)}
+              class={style.sketchWrapper}
+            >
+              <Sketch
+                modelValue={stateColors.value}
+                onUpdate:modelValue={handleColorUpdate}
+                class={style.sketch}
+              />
+              <Button filled color={colors.value.hex} onClick={handleColorSave}>
+                Save
+              </Button>
+            </div>
+          )}
+        </Transition>
+      </header>
+    )
   },
 })
 </script>

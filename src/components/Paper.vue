@@ -1,8 +1,14 @@
-<template>
-  <div :class="$style.wrapper">
-    <slot />
-  </div>
-</template>
+<script>
+import { defineComponent, useCssModule } from 'vue'
+
+export default defineComponent({
+  setup(props, { slots }) {
+    const style = useCssModule()
+
+    return () => <div class={style.wrapper}>{slots.default()}</div>
+  },
+})
+</script>
 
 <style lang="scss" module>
 .wrapper {

@@ -1,19 +1,5 @@
-<template>
-  <div
-    :class="[
-      $style.progressBar,
-      $style.stripes,
-      $style.animated,
-      $style.reverse,
-      $style.slower,
-    ]"
-  >
-    <span :style="{ width }" :class="$style.progressBarInner" />
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 export default defineComponent({
   props: {
@@ -21,6 +7,24 @@ export default defineComponent({
       type: String,
       required: true,
     },
+  },
+  setup(props) {
+    const style = useCssModule()
+    const { width } = toRefs(props)
+
+    return () => (
+      <div
+        class={[
+          style.progressBar,
+          style.stripes,
+          style.animated,
+          style.reverse,
+          style.slower,
+        ]}
+      >
+        <span style={{ width: width.value }} class={style.progressBarInner} />
+      </div>
+    )
   },
 })
 </script>

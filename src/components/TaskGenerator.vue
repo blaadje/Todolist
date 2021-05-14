@@ -1,53 +1,51 @@
-<template>
-  <div :class="$style.wrapper">
-    <input
-      v-model="newTodoName"
-      :class="$style.input"
-      type="text"
-      placeholder="Create a task"
-      @keyup.enter="createTask"
-    />
-    <TagSelector
-      :class="$style.tagSelector"
-      :tags="tags"
-      @selectedTag="handleSelectedTag"
-    />
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
+
+import useState from '@core/hooks/useState'
 
 import TagSelector from './TagSelector'
 
 export default defineComponent({
-  components: {
-    TagSelector,
-  },
   props: {
     tags: {
       type: Array,
       required: true,
     },
   },
-  data() {
-    return {
-      newTodoName: '',
-      selectedTag: null,
-    }
-  },
-  methods: {
-    handleSelectedTag(tagId) {
-      this.selectedTag = tagId
-    },
-    createTask() {
-      if (!this.newTodoName) {
+  setup(props, { emit }) {
+    const [newTodoName, setNewTodoName] = useState('')
+    const [selectedTag, setSelectedTag] = useState(null)
+    const { tags } = toRefs(props)
+    const style = useCssModule()
+
+    const handleSelectedTag = (tagId) => setSelectedTag(tagId)
+
+    const createTask = ({ keyCode }) => {
+      if (!newTodoName.value || keyCode !== 13) {
         return
       }
 
-      this.$emit('createTask', this.newTodoName, this.selectedTag)
-      this.newTodoName = ''
-    },
+      emit('createTask', newTodoName.value, selectedTag.value)
+      setNewTodoName('')
+    }
+
+    return () => (
+      <div class={style.wrapper}>
+        <input
+          value={newTodoName.value}
+          class={style.input}
+          type="text"
+          placeholder="Create a task"
+          onChange={({ target }) => setNewTodoName(target.value)}
+          onKeyup={createTask}
+        />
+        <TagSelector
+          class={style.tagSelector}
+          tags={tags.value}
+          onSelectedTag={handleSelectedTag}
+        />
+      </div>
+    )
   },
 })
 </script>

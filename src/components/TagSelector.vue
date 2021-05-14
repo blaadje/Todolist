@@ -1,63 +1,58 @@
-<template>
-  <div v-click-outside="hideTagSelector">
-    <div :class="$style.topWrapper" @click="toggleTagSelector">
-      <Pellet :background="selectedTagColor" />
-      <DownArrowIcon :class="$style.downArrowIcon" />
-    </div>
-    <Paper v-if="tagSelectorVisible" :class="$style.content">
-      <TagList
-        :class="$style.tagList"
-        :horizontal="false"
-        :tags="tags"
-        @selectedTag="setSelectedTag"
-      />
-    </Paper>
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { computed, defineComponent, toRefs, useCssModule } from 'vue'
 
 import DownArrowIcon from '@assets/downArrow.svg'
+import useState from '@core/hooks/useState'
 
 import Paper from './Paper'
 import Pellet from './Pellet'
 import TagList from './TagList'
 
 export default defineComponent({
-  components: {
-    DownArrowIcon,
-    TagList,
-    Pellet,
-    Paper,
-  },
   props: {
     tags: {
       type: Array,
       required: true,
     },
   },
-  data() {
-    return { selectedTag: null, tagSelectorVisible: false }
-  },
-  computed: {
-    selectedTagColor() {
-      const tag = this.tags.find(({ id }) => id === this.selectedTag)
+  setup(props, { emit }) {
+    const { tags } = toRefs(props)
+    const style = useCssModule()
+    const [selectorIsVisible, setSelectorIsVisible] = useState(false)
+    const [selectedTag, setSelectedTag] = useState(null)
+
+    const handleSelectedTag = (tagId) => {
+      setSelectedTag(tagId)
+      emit('selectedTag', tagId)
+    }
+
+    const selectedTagColor = computed(() => {
+      const tag = tags.value.find(({ id }) => id === selectedTag.value)
 
       return tag && tag.color
-    },
-  },
-  methods: {
-    hideTagSelector() {
-      this.tagSelectorVisible = false
-    },
-    toggleTagSelector() {
-      this.tagSelectorVisible = !this.tagSelectorVisible
-    },
-    setSelectedTag(tagId) {
-      this.selectedTag = tagId
-      this.$emit('selectedTag', tagId)
-    },
+    })
+
+    return () => (
+      <div v-click-outside={() => setSelectorIsVisible(false)}>
+        <div
+          class={style.topWrapper}
+          onClick={() => setSelectorIsVisible(!selectorIsVisible.value)}
+        >
+          <Pellet background={selectedTagColor.value} />
+          <DownArrowIcon class={style.downArrowIcon} />
+        </div>
+        {selectorIsVisible.value && (
+          <Paper class={style.content}>
+            <TagList
+              class={style.tagList}
+              horizontal={false}
+              tags={tags.value}
+              onSelectedTag={handleSelectedTag}
+            />
+          </Paper>
+        )}
+      </div>
+    )
   },
 })
 </script>

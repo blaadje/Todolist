@@ -16,6 +16,7 @@ let newEvent = null
 let oldDelta = null
 let oldDraggingPosition = 0
 
+// @TODO: A refactor
 export default defineComponent({
   render() {
     this.slots = this.$slots.default()
@@ -73,7 +74,6 @@ export default defineComponent({
       const isClickOnDraggingHandler = event.path.some(
         (item) =>
           item.className &&
-          item.className.baseVal &&
           item.className.baseVal &&
           item.className.baseVal.includes('handle'),
       )

@@ -1,33 +1,18 @@
-<template>
-  <div :class="$style.wrapper" :style="cssVar">
-    <span
-      ref="trigger"
-      :class="$style.trigger"
-      @mouseenter="show"
-      @mouseleave="hide"
-      @click="hide"
-    >
-      <slot name="trigger" />
-    </span>
-
-    <Transition
-      :enter-active-class="$style['slide-enter-active']"
-      :leave-active-class="$style['slide-leave-active']"
-      :enter-class="$style['slide-enter']"
-      :leave-to-class="$style['slide-leave-to']"
-    >
-      <span v-if="isVisible" :class="$style.content">
-        <slot name="content" />
-      </span>
-    </Transition>
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import {
+  defineComponent,
+  computed,
+  toRefs,
+  useCssModule,
+  Transition,
+} from 'vue'
+
+import useState from '@core/hooks/useState'
 
 let timeout = 0
-const appearances = ['default', 'success']
+const SUCCESS = 'success'
+const DEFAULT = 'default'
+const appearances = [DEFAULT, SUCCESS]
 
 export default defineComponent({
   props: {
@@ -41,45 +26,64 @@ export default defineComponent({
       default: false,
     },
   },
-  data() {
-    return {
-      isVisible: false,
-    }
-  },
-  computed: {
-    cssVar() {
+  setup(props, { slots }) {
+    const { appearance, disabled } = toRefs(props)
+    const [isVisible, setIsVisible] = useState(false)
+    const style = useCssModule()
+
+    const cssVar = computed(() => {
+      const getBackgroundColorByAppearance = () => {
+        switch (appearance.value) {
+          case SUCCESS:
+            return '53, 153, 68'
+          default:
+            return '0, 0, 0'
+        }
+      }
+
       return {
-        '--background-color': this.getBackgroundColorByAppearance(
-          this.appearance,
-        ),
+        '--background-color': getBackgroundColorByAppearance(),
       }
-    },
-  },
-  methods: {
-    getBackgroundColorByAppearance(appearance) {
-      switch (appearance) {
-        case 'success':
-          return '53, 153, 68'
-        default:
-          return '0, 0, 0'
-      }
-    },
-    async show() {
-      if (this.disabled) {
+    })
+
+    const show = () => {
+      if (disabled.value) {
         return
       }
 
       clearInterval(timeout)
 
-      timeout = setTimeout(() => {
-        this.isVisible = true
-      }, 200)
-    },
-    hide() {
+      timeout = setTimeout(() => setIsVisible(true), 200)
+    }
+    const hide = () => {
       clearInterval(timeout)
+      setIsVisible(false)
+    }
 
-      this.isVisible = false
-    },
+    return () => (
+      <div class={style.wrapper} style={cssVar.value}>
+        <span
+          ref="trigger"
+          class={style.trigger}
+          onMouseenter={show}
+          onMouseleave={hide}
+          onClick={hide}
+        >
+          {slots.trigger()}
+        </span>
+
+        <Transition
+          enter-active-class={style['slide-enter-active']}
+          leave-active-class={style['slide-leave-active']}
+          enter-class={style['slide-enter']}
+          leave-to-class={style['slide-leave-to']}
+        >
+          {isVisible.value && (
+            <span class={style.content}>{slots.content()}</span>
+          )}
+        </Transition>
+      </div>
+    )
   },
 })
 </script>

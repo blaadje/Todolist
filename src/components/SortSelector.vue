@@ -1,41 +1,13 @@
-<template>
-  <div :class="$style.wrapper">
-    <div :class="$style.button" @click="toggleVisibility">
-      <span :class="$style.label">Sort by</span>
-      <span :class="$style.activeLabel">{{ activeSort.label }}</span>
-      <SortIcon :class="$style.sortIcon" />
-    </div>
-    <Paper v-if="isVisible" v-click-outside="hide" :class="$style.content">
-      <div
-        v-for="{ label, value } in sortBy"
-        :key="value"
-        :class="[
-          $style.contentItem,
-          { [$style.isSelected]: isSelected(value) },
-        ]"
-        @click="handleSort(value)"
-      >
-        {{ label }}
-        <CheckIcon v-if="isSelected(value)" :class="$style.checkIcon" />
-      </div>
-    </Paper>
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 import CheckIcon from '@assets/check.svg'
 import SortIcon from '@assets/sort.svg'
+import useState from '@core/hooks/useState'
 
 import Paper from './Paper'
 
 export default defineComponent({
-  components: {
-    CheckIcon,
-    SortIcon,
-    Paper,
-  },
   props: {
     activeSort: {
       type: Object,
@@ -46,24 +18,47 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      isVisible: false,
-    }
-  },
-  methods: {
-    isSelected(sort) {
-      return sort === this.activeSort.value
-    },
-    handleSort(sort) {
-      this.$emit('sortBy', sort)
-    },
-    toggleVisibility() {
-      this.isVisible = !this.isVisible
-    },
-    hide() {
-      this.isVisible = false
-    },
+  setup(props, { emit }) {
+    const { activeSort, sortBy } = toRefs(props)
+    const style = useCssModule()
+    const [isVisible, setIsVisible] = useState(false)
+
+    const isSelected = (sort) => sort === activeSort.value.value
+
+    return () => (
+      <div class={style.wrapper}>
+        <div
+          class={style.button}
+          onClick={() => setIsVisible(!isVisible.value)}
+        >
+          <span class={style.label}>Sort by</span>
+          <span class={style.activeLabel}>{activeSort.label}</span>
+          <SortIcon class={style.sortIcon} />
+        </div>
+        {isVisible.value && (
+          <Paper
+            v-click-outside={() => setIsVisible(false)}
+            class={style.content}
+          >
+            {sortBy.value.map(({ label, value }) => {
+              return (
+                <div
+                  key={value}
+                  class={[
+                    style.contentItem,
+                    { [style.isSelected]: isSelected(value) },
+                  ]}
+                  onClick={() => emit('sortBy', value)}
+                >
+                  {label}
+                  {isSelected(value) && <CheckIcon class={style.checkIcon} />}
+                </div>
+              )
+            })}
+          </Paper>
+        )}
+      </div>
+    )
   },
 })
 </script>

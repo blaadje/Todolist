@@ -1,22 +1,8 @@
-<template>
-  <button
-    :class="[$style.wrapper, { [$style.disabled]: disabled }]"
-    :style="{
-      background: filled ? color : 'none',
-      color: filled ? 'white' : color,
-      border: filled ? '' : `1px solid ${color}`,
-    }"
-    :disabled="disabled"
-    v-on="$attrs"
-  >
-    <slot />
-  </button>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 export default defineComponent({
+  inheritAttrs: false,
   props: {
     color: {
       type: String,
@@ -30,6 +16,25 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+  },
+  setup(props, { attrs, slots }) {
+    const { filled, color, disabled } = toRefs(props)
+    const style = useCssModule()
+
+    return () => (
+      <button
+        class={[style.wrapper, { [style.disabled]: disabled.value }]}
+        style={{
+          background: filled.value ? color.value : 'none',
+          color: filled.value ? 'white' : color.value,
+          border: filled.value ? '' : `1px solid ${color.value}`,
+        }}
+        disabled={disabled.value}
+        {...attrs}
+      >
+        {slots.default()}
+      </button>
+    )
   },
 })
 </script>
