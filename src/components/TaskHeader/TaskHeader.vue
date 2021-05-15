@@ -4,7 +4,7 @@ import { defineComponent, toRefs, useCssModule } from 'vue'
 import AllCompletedIcon from '@assets/allcompleted.svg'
 import TransferTodayIcon from '@assets/transferToday.svg'
 
-import SortSelector from './SortSelector'
+import SortSelector from '../SortSelector'
 
 export default defineComponent({
   props: {

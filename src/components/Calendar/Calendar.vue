@@ -21,7 +21,7 @@ import {
   isToday,
 } from '@core/utils'
 
-import Slider from './Slider'
+import Slider from '../Slider'
 
 export default defineComponent({
   props: {

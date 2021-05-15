@@ -4,9 +4,9 @@ import { defineComponent, toRefs, useCssModule, computed, watch } from 'vue'
 import useState from '@core/hooks/useState'
 import { getWeekFromDate, formatDate, incrementDay, isToday } from '@core/utils'
 
-import Button from './Button'
-import Calendar from './Calendar'
-import Paper from './Paper'
+import Button from '../Button'
+import Calendar from '../Calendar'
+import Paper from '../Paper'
 
 export default defineComponent({
   props: {

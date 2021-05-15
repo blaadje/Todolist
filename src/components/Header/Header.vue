@@ -15,9 +15,9 @@ import ColorPickerIcon from '@assets/color-picker.svg'
 import useState from '@core/hooks/useState'
 import { formatDate } from '@core/utils'
 
-import Button from './Button'
-import DatePicker from './DatePicker'
-import Tooltip from './Tooltip'
+import Button from '../Button'
+import DatePicker from '../DatePicker'
+import Tooltip from '../Tooltip'
 
 export default defineComponent({
   props: {
