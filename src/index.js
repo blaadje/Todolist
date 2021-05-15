@@ -4,12 +4,15 @@ import * as Sentry from '@sentry/browser'
 import { createApp } from 'vue'
 import vClickOutside from 'vue3-click-outside'
 
+import store from '@core/store'
+
 import App from './components/App'
 
 dotenv.config()
 
 const app = createApp(App)
 
+app.use(store)
 app.use(vClickOutside)
 app.mount('#app')
 

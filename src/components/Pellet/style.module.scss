@@ -1,0 +1,32 @@
+.tag {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 0.2rem;
+  margin: 0.3rem;
+
+  cursor: pointer;
+}
+
+.hasNoTag {
+  position: relative;
+
+  overflow: hidden;
+  border: 1px solid #ededed;
+
+  background: transparent;
+
+  &:before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 1px;
+    height: 180%;
+
+    content: '';
+    background: red;
+    transform: rotate(45deg) translate(-50%, -50%);
+    transform-origin: 0% 0%;
+  }
+}

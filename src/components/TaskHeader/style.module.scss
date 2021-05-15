@@ -1,0 +1,85 @@
+.wrapper {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  padding: 1.5rem;
+
+  background: white;
+}
+
+.transferRemainingWrapper {
+  display: flex;
+  margin-left: 1.5rem;
+
+  align-items: center;
+
+  cursor: pointer;
+}
+
+.transferTodayIconWrapper,
+.allCompletedIconWrapper {
+  position: relative;
+
+  width: 40px;
+  height: 40px;
+  border: 1px solid #efefef;
+  border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+.transferTodayIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 18px;
+  height: 18px;
+
+  transform: translate(-50%, -50%);
+  fill: #5dc2b1;
+}
+
+.allCompletedWrapper {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  cursor: pointer;
+
+  &.isSelected {
+    .allCompletedIconWrapper {
+      background: #ededed;
+    }
+  }
+}
+
+.allCompletedIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 18px;
+  height: 18px;
+
+  transform: translate(-50%, -50%);
+  stroke: #5dc2b1;
+}
+
+.allCompletedText {
+  margin-left: 15px;
+
+  user-select: none;
+  font-weight: 100;
+  color: grey;
+}
+
+.sortSelector {
+  display: flex;
+  margin-left: auto;
+
+  align-items: center;
+}

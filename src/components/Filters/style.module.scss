@@ -1,0 +1,187 @@
+$visibilityIcon: 20px;
+
+.wrapper {
+  position: fixed;
+  z-index: 1;
+  right: 0;
+  bottom: 5%;
+
+  display: flex;
+  width: auto;
+  padding-left: 0;
+  border-radius: 0.4rem 0 0 0.4rem;
+
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(calc(100% - #{$visibilityIcon} + 2px));
+
+  &.isVisible {
+    transform: translateX(0);
+  }
+}
+
+.content {
+  padding: 1rem 1.1rem;
+}
+
+.filtersWrapper {
+  display: flex;
+  margin: 1rem 0;
+
+  justify-content: center;
+}
+
+.hasNoTag {
+  position: relative;
+
+  overflow: hidden;
+  border: 1px solid #ededed;
+
+  &:before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 1px;
+    height: 180%;
+
+    content: '';
+    background: red;
+    transform: rotate(45deg) translate(-50%, -50%);
+    transform-origin: 0% 0%;
+  }
+}
+
+.statusTitle {
+  font-size: 0.9rem;
+  font-weight: 100;
+  color: #757575;
+}
+
+.toggleVisibilityPanel {
+  display: flex;
+  width: $visibilityIcon;
+  border-right: 1px solid #f4f4f4;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  &.isVisible {
+    .leftArrowIcon {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.filters {
+  display: inline-flex;
+  width: auto;
+  margin: 0 auto;
+
+  flex-direction: column;
+}
+
+.remainingTasks {
+  display: block;
+  margin-right: 1em;
+
+  color: #c2c2c2;
+  font-size: 0.8em;
+  text-align: center;
+}
+
+.tagsWrapper {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.tag {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 0.2rem;
+  margin: 0.3rem;
+
+  cursor: pointer;
+}
+
+.filterWrapper,
+.statusWrapper {
+  display: flex;
+
+  align-items: center;
+}
+
+.filterWrapper {
+  margin-bottom: 1rem;
+}
+
+.dateLabel {
+  margin-right: 0.6rem;
+}
+
+.filterButton {
+  padding: 0.5em 1em;
+  border: 1px solid #c2c2c2;
+  border-radius: 0;
+  margin-left: 1rem;
+
+  background: transparent;
+  outline: none;
+  white-space: nowrap;
+  font-size: 0.8em;
+  color: #c2c2c2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.footer label[for='toggle-all'] {
+  display: none;
+}
+
+.leftArrowIcon {
+  width: 14px;
+  height: 14px;
+
+  transition: transform 0.3s ease-in-out;
+}
+
+.toggleAll {
+  position: absolute;
+  top: 20px;
+  left: 25px;
+
+  width: 30px;
+  height: 30px;
+  border: none;
+
+  text-align: center;
+  transform: rotate(90deg);
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+
+.toggleAll:before {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  content: '❯';
+  font-size: 30px;
+  color: #e6e6e6;
+}
+
+.toggleAll:checked:before {
+  color: #737373;
+}
+
+.toggleAll:checked:before span {
+  display: block;
+  margin-right: 1em;
+
+  color: #c2c2c2;
+  font-size: 0.8em;
+  text-align: center;
+}

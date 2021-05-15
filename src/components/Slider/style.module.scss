@@ -1,0 +1,15 @@
+.wrapper {
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+
+  flex-wrap: nowrap;
+
+  outline: none;
+  user-select: none;
+}
+
+.element {
+  flex-grow: 0;
+  flex-shrink: 0;
+}

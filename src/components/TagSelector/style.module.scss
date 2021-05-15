@@ -1,0 +1,26 @@
+.content {
+  position: absolute;
+  top: 100%;
+  right: 0;
+}
+
+.topWrapper {
+  display: flex;
+
+  align-items: center;
+
+  cursor: pointer;
+}
+
+.downArrowIcon {
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+}
+
+.tagList {
+  display: flex;
+  margin-top: 0.5rem;
+
+  align-items: center;
+}

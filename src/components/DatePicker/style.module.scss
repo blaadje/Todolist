@@ -1,0 +1,47 @@
+.shortcuts {
+  padding: 1rem 2.8rem;
+  border-bottom: 1px solid #ededed;
+}
+
+.agenda {
+  overflow: hidden;
+  padding: 0;
+
+  user-select: none;
+}
+
+.triangle {
+  position: absolute;
+  top: -17px;
+  right: 0;
+  left: 0;
+
+  width: 0;
+  height: 0;
+  border-width: 0 17.5px 17px 17.5px;
+  border-style: solid;
+  margin: auto;
+
+  content: '';
+}
+
+.header {
+  padding: 1.5em;
+
+  color: white;
+}
+
+.year {
+  display: block;
+  margin-bottom: 0.6rem;
+
+  opacity: 0.7;
+}
+
+.date {
+  font-size: 1.5em;
+}
+
+.button {
+  margin-right: 0.5rem;
+}

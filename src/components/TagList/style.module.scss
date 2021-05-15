@@ -1,0 +1,11 @@
+.wrapper {
+  display: flex;
+}
+
+.vertical {
+  flex-direction: column;
+}
+
+.selected {
+  transform: scale(1.3);
+}

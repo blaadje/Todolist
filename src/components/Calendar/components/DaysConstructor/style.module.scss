@@ -1,0 +1,91 @@
+.daysLabels {
+  display: flex;
+
+  flex-wrap: wrap;
+}
+
+.day {
+  position: relative;
+
+  display: flex;
+  border-radius: 50%;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.previous {
+  color: #b6c1d6;
+}
+
+.label {
+  z-index: 2;
+}
+
+.selectedOverlay {
+  z-index: 1;
+}
+
+.selectableDay {
+  cursor: pointer;
+  font-weight: bold;
+  color: #757575;
+
+  &.isSelected {
+    color: white;
+  }
+
+  &:hover {
+    color: white;
+
+    .hoverOverlay {
+      transform: scale(0.8);
+      opacity: 0.6;
+    }
+  }
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  border-radius: 50%;
+
+  transform: scale(0.8);
+}
+
+.todayOverlay {
+  background: #ededed;
+}
+
+.hoverOverlay {
+  z-index: 0;
+
+  transform-origin: center;
+  transition: transform 0.3s ease;
+  opacity: 0;
+  color: white;
+  transform: scale(0.4);
+}
+
+
+.dayHasLabelOverlay {
+  position: absolute;
+  z-index: 3;
+  top: 6px;
+  right: 6px;
+
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+
+  background: #ed687b;
+  transform-origin: center;
+
+  &.isCompleted {
+    background: #2ec684;
+  }
+}
