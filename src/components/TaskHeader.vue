@@ -1,40 +1,5 @@
-<template>
-  <div :class="$style.wrapper">
-    <div
-      v-if="hasTask"
-      :class="[
-        $style.allCompletedWrapper,
-        { [$style.isSelected]: areTasksAllDone },
-      ]"
-      @click="$emit('toggleAllCompleted')"
-    >
-      <div :class="$style.allCompletedIconWrapper">
-        <AllCompletedIcon :class="$style.allCompletedIcon" />
-      </div>
-      <span :class="$style.allCompletedText">Toggle all completed</span>
-    </div>
-    <div
-      v-if="isToday && hasRemainingTask"
-      :class="$style.transferRemainingWrapper"
-      @click="$emit('transferRemainingTasks')"
-    >
-      <div :class="$style.transferTodayIconWrapper">
-        <TransferTodayIcon :class="$style.transferTodayIcon" />
-      </div>
-      <span :class="$style.allCompletedText">Transfer remaining tasks</span>
-    </div>
-    <SortSelector
-      v-if="hasTask"
-      :class="$style.sortSelector"
-      :active-sort="activeSort"
-      :sort-by="sortBy"
-      @sortBy="(value) => $emit('sortBy', value)"
-    />
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 import AllCompletedIcon from '@assets/allcompleted.svg'
 import TransferTodayIcon from '@assets/transferToday.svg'
@@ -42,11 +7,6 @@ import TransferTodayIcon from '@assets/transferToday.svg'
 import SortSelector from './SortSelector'
 
 export default defineComponent({
-  components: {
-    AllCompletedIcon,
-    TransferTodayIcon,
-    SortSelector,
-  },
   props: {
     activeSort: {
       type: Object,
@@ -72,6 +32,55 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
+  },
+  setup(props, { emit }) {
+    const {
+      activeSort,
+      sortBy,
+      isToday,
+      areTasksAllDone,
+      hasTask,
+      hasRemainingTask,
+    } = toRefs(props)
+    const style = useCssModule()
+
+    return () => (
+      <div class={style.wrapper}>
+        {hasTask.value && (
+          <div
+            class={[
+              style.allCompletedWrapper,
+              { [style.isSelected]: areTasksAllDone.value },
+            ]}
+            onClick={() => emit('toggleAllCompleted')}
+          >
+            <div class={style.allCompletedIconWrapper}>
+              <AllCompletedIcon class={style.allCompletedIcon} />
+            </div>
+            <span class={style.allCompletedText}>Toggle all completed</span>
+          </div>
+        )}
+        {isToday.value && hasRemainingTask.value && (
+          <div
+            class={style.transferRemainingWrapper}
+            onClick={() => emit('transferRemainingTasks')}
+          >
+            <div class={style.transferTodayIconWrapper}>
+              <TransferTodayIcon class={style.transferTodayIcon} />
+            </div>
+            <span class={style.allCompletedText}>Transfer remaining tasks</span>
+          </div>
+        )}
+        {hasTask.value && (
+          <SortSelector
+            class={style.sortSelector}
+            active-sort={activeSort.value}
+            sort-by={sortBy.value}
+            onSortBy={(value) => emit('sortBy', value)}
+          />
+        )}
+      </div>
+    )
   },
 })
 </script>

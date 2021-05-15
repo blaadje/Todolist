@@ -1,81 +1,71 @@
-<template>
-  <div :class="$style.updatesWrapper">
-    <div :class="$style.downloadIconWrapper" @click="toggleUpdatesPanel">
-      <DownloadIcon :class="$style.downloadIcon" />
-      <div
-        v-if="updatesPanelVisible"
-        v-click-outside="hideUpdatesPanel"
-        :class="$style.updatesPanel"
-        @click.stop
-      >
-        <ProgressBar
-          :class="$style.progressBar"
-          :width="`${updates.progressObj.percent}%`"
-        />
-        <div :class="$style.updateText">
-          <a
-            v-if="updates.information"
-            :class="$style.updateReleaseLink"
-            href="#"
-            @click.prevent="
-              handleClickReleaseLink(
-                `https://github.com/blaadje/Todo-list/releases/tag/${updates.information.releaseName}`,
-              )
-            "
-          >
-            {{ updates.information && updates.information.version }}
-          </a>
-          <div :class="$style.isAvailableText">is available !</div>
-          <Button v-if="updates.downloaded" @click="handleInstall">
-            Install
-          </Button>
-          <span v-if="!updates.downloaded">Downloading...</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script>
 import { ipcRenderer } from 'electron'
 
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 import DownloadIcon from '@assets/download.svg'
+import useState from '@core/hooks/useState'
 
 import Button from './Button'
 import ProgressBar from './ProgressBar'
 
 export default defineComponent({
-  components: {
-    DownloadIcon,
-    ProgressBar,
-    Button,
-  },
   props: {
     updates: {
       type: Object,
       required: true,
     },
   },
-  data() {
-    return {
-      updatesPanelVisible: false,
-    }
-  },
-  methods: {
-    handleInstall() {
-      ipcRenderer.send('install-update')
-    },
-    handleClickReleaseLink(url) {
+  setup(props) {
+    const { updates } = toRefs(props)
+    const style = useCssModule()
+    const [isVisible, setIsVisible] = useState(false)
+
+    const handleInstall = () => ipcRenderer.send('install-update')
+
+    const handleClickReleaseLink = () => {
+      const url = `https://github.com/blaadje/Todo-list/releases/tag/${updates.value.information.releaseName}`
+
       ipcRenderer.send('open-release-link', url)
-    },
-    hideUpdatesPanel() {
-      this.updatesPanelVisible = false
-    },
-    toggleUpdatesPanel() {
-      this.updatesPanelVisible = !this.updatesPanelVisible
-    },
+    }
+
+    return () => (
+      <div class={style.updatesWrapper}>
+        <div
+          class={style.downloadIconWrapper}
+          onClick={() => setIsVisible(!isVisible.value)}
+        >
+          <DownloadIcon class={style.downloadIcon} />
+          {isVisible.value && (
+            <div
+              v-click-outside={() => setIsVisible(false)}
+              class={style.updatesPanel}
+            >
+              <ProgressBar
+                class={style.progressBar}
+                width={`${updates.value.progressObj.percent}%`}
+              />
+              <div class={style.updateText}>
+                {updates.value.information && (
+                  <a
+                    class={style.updateReleaseLink}
+                    href="#"
+                    onClick={handleClickReleaseLink}
+                  >
+                    {updates.value.information.version}
+                  </a>
+                )}
+                <div class={style.isAvailableText}>is available !</div>
+                {updates.value.downloaded && (
+                  <Button onClick={handleInstall}>Install</Button>
+                )}
+                {!updates.value.downloaded && <span>Downloading...</span>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
   },
 })
 </script>

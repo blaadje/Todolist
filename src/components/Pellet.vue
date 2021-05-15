@@ -1,12 +1,5 @@
-<template>
-  <span
-    :class="[$style.tag, { [$style.hasNoTag]: !background }]"
-    :style="{ background }"
-  />
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
 
 export default defineComponent({
   props: {
@@ -14,6 +7,17 @@ export default defineComponent({
       type: String,
       default: '',
     },
+  },
+  setup(props) {
+    const style = useCssModule()
+    const { background } = toRefs(props)
+
+    return () => (
+      <span
+        class={[style.tag, { [style.hasNoTag]: !background.value }]}
+        style={{ background: background.value }}
+      />
+    )
   },
 })
 </script>

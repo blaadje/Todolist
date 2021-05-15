@@ -1,75 +1,7 @@
-<template>
-  <Paper
-    v-click-outside="hideFilters"
-    :class="[$style.wrapper, { [$style.isVisible]: isVisible }]"
-  >
-    <div
-      :class="[$style.toggleVisibilityPanel, { [$style.isVisible]: isVisible }]"
-      @click="toggleVisibility"
-    >
-      <LeftArrowIcon :class="$style.leftArrowIcon" />
-    </div>
-    <div :class="$style.content">
-      <span :class="$style.remainingTasks">
-        {{ remaining }} remaining tasks
-      </span>
-      <div :class="$style.filtersWrapper">
-        <div :class="$style.filters">
-          <TagList
-            :class="$style.tagsWrapper"
-            :tags="tags"
-            :selected-tags="selectedTags"
-            @selectedTag="(tagId) => $emit('filterByTag', tagId)"
-          />
-          <div :class="$style.filterWrapper">
-            <label :class="[$style.dateLabel, $style.statusTitle]">Date:</label>
-            <button
-              :class="$style.filterButton"
-              :style="buttonsFilter('all')"
-              @click.prevent="$emit('filterByAll')"
-            >
-              All
-            </button>
-            <button
-              :class="$style.filterButton"
-              :style="buttonsFilter('date')"
-              @click.prevent="$emit('filterByDate')"
-            >
-              Selected Date
-            </button>
-          </div>
-          <div :class="$style.statusWrapper">
-            <label :class="$style.statusTitle">Status:</label>
-            <button
-              :class="$style.filterButton"
-              :style="buttonsStatus('all')"
-              @click.prevent="$emit('statusByAll')"
-            >
-              All
-            </button>
-            <button
-              :class="$style.filterButton"
-              :style="buttonsStatus('todo')"
-              @click.prevent="$emit('statusByTodo')"
-            >
-              Todo
-            </button>
-            <button
-              :class="$style.filterButton"
-              :style="buttonsStatus('done')"
-              @click.prevent="$emit('statusByCompleted')"
-            >
-              Completed
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Paper>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule } from 'vue'
+
+import useState from '@core/hooks/useState'
 
 import LeftArrowIcon from '../assets/leftArrow.svg'
 
@@ -77,11 +9,6 @@ import Paper from './Paper'
 import TagList from './TagList'
 
 export default defineComponent({
-  components: {
-    LeftArrowIcon,
-    TagList,
-    Paper,
-  },
   props: {
     tags: {
       type: Array,
@@ -108,36 +35,108 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      isVisible: false,
+  setup(props, { emit }) {
+    const style = useCssModule()
+    const { tags, selectedTags, colors, remaining, filter, status } = toRefs(
+      props,
+    )
+    const [isVisible, setIsVisible] = useState(false)
+
+    const buttonsStatus = (element) => {
+      if (status.value === element) {
+        return {
+          border: `1px solid${colors.value.hex}`,
+          color: colors.value.hex,
+        }
+      }
+
+      return 'border: 1px solid #c2c2c2'
     }
-  },
-  methods: {
-    hideFilters() {
-      this.isVisible = false
-    },
-    toggleVisibility() {
-      this.isVisible = !this.isVisible
-    },
-    buttonsStatus(element) {
-      if (this.status === element) {
+    const buttonsFilter = (element) => {
+      if (filter.value === element) {
         return {
-          border: `1px solid${this.colors.hex}`,
-          color: this.colors.hex,
+          border: `1px solid${colors.value.hex}`,
+          color: colors.value.hex,
         }
       }
+
       return 'border: 1px solid #c2c2c2'
-    },
-    buttonsFilter(element) {
-      if (this.filter === element) {
-        return {
-          border: `1px solid${this.colors.hex}`,
-          color: this.colors.hex,
-        }
-      }
-      return 'border: 1px solid #c2c2c2'
-    },
+    }
+
+    return () => (
+      <Paper
+        v-click-outside={() => setIsVisible(false)}
+        class={[style.wrapper, { [style.isVisible]: isVisible.value }]}
+      >
+        <div
+          class={[
+            style.toggleVisibilityPanel,
+            { [style.isVisible]: isVisible.value },
+          ]}
+          onClick={() => setIsVisible(!isVisible.value)}
+        >
+          <LeftArrowIcon class={style.leftArrowIcon} />
+        </div>
+        <div class={style.content}>
+          <span class={style.remainingTasks}>
+            {remaining.value} remaining tasks
+          </span>
+          <div class={style.filtersWrapper}>
+            <div class={style.filters}>
+              <TagList
+                class={style.tagsWrapper}
+                tags={tags.value}
+                selected-tags={selectedTags.value}
+                onSelectedTag={(tagId) => emit('filterByTag', tagId)}
+              />
+              <div class={style.filterWrapper}>
+                <label class={[style.dateLabel, style.statusTitle]}>
+                  Date:
+                </label>
+                <button
+                  class={style.filterButton}
+                  style={buttonsFilter('all')}
+                  onClick={() => emit('filterByAll')}
+                >
+                  All
+                </button>
+                <button
+                  class={style.filterButton}
+                  style={buttonsFilter('date')}
+                  onClick={() => emit('filterByDate')}
+                >
+                  Selected Date
+                </button>
+              </div>
+              <div class={style.statusWrapper}>
+                <label class={style.statusTitle}>Status:</label>
+                <button
+                  class={style.filterButton}
+                  style={buttonsStatus('all')}
+                  onClick={() => emit('statusByAll')}
+                >
+                  All
+                </button>
+                <button
+                  class={style.filterButton}
+                  style={buttonsStatus('todo')}
+                  onClick={() => emit('statusByTodo')}
+                >
+                  Todo
+                </button>
+                <button
+                  class={style.filterButton}
+                  style={buttonsStatus('done')}
+                  onClick={() => emit('statusByCompleted')}
+                >
+                  Completed
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Paper>
+    )
   },
 })
 </script>

@@ -1,71 +1,14 @@
-<template>
-  <div>
-    <div
-      :class="$style.triangle"
-      :style="{
-        borderColor: `transparent transparent ${colors.hex} transparent`,
-      }"
-    />
-    <Paper :class="$style.agenda">
-      <div :class="$style.header" :style="{ background: colors.hex }">
-        <span :class="$style.year">{{ year }}</span>
-        <span :class="$style.date">
-          {{ day }}
-        </span>
-        <span>(week {{ weekNumber }})</span>
-      </div>
-      <div :class="$style.days">
-        <div :class="$style.shortcuts">
-          <Button
-            :color="colors.hex"
-            :class="$style.button"
-            :disabled="isTodayDisabled"
-            @click="setToday"
-          >
-            Today
-          </Button>
-          <Button
-            :color="colors.hex"
-            :class="$style.button"
-            @click="setTomorrow"
-          >
-            Tomorrow
-          </Button>
-          <Button
-            :color="colors.hex"
-            :class="$style.button"
-            @click="setNextWeek"
-          >
-            Next Week
-          </Button>
-        </div>
-        <Calendar
-          :colors="colors"
-          :labels-by-day="taskedDays"
-          :selected-date="selectedDate"
-          @isTodayDisabled="setIsTodayDisabled"
-          @setSelectedDate="setSelectedDate"
-        />
-      </div>
-    </Paper>
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, useCssModule, computed, watch } from 'vue'
 
-import { getWeekFromDate, formatDate, incrementDay } from '@core/utils'
+import useState from '@core/hooks/useState'
+import { getWeekFromDate, formatDate, incrementDay, isToday } from '@core/utils'
 
 import Button from './Button'
 import Calendar from './Calendar'
 import Paper from './Paper'
 
 export default defineComponent({
-  components: {
-    Calendar,
-    Button,
-    Paper,
-  },
   props: {
     taskedDays: {
       type: Object,
@@ -80,48 +23,104 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      isTodayDisabled: true,
+  setup(props, { emit }) {
+    const style = useCssModule()
+    const { taskedDays, selectedDate, colors } = toRefs(props)
+    const [isTodayDisabled, setIsTodayDisabled] = useState(true)
+
+    watch(
+      () => props.selectedDate,
+      (date) => setIsTodayDisabled(isToday(date)),
+    )
+
+    const handleSelectedDateUpdate = (date) => {
+      emit('selectedDate', date)
     }
-  },
-  computed: {
-    weekNumber() {
-      return getWeekFromDate(this.selectedDate)
-    },
-    day() {
-      return formatDate(this.selectedDate, {
+
+    const handlePreviewDateUpdate = (date) => {
+      setIsTodayDisabled(date.getMonth() === selectedDate.value.getMonth())
+    }
+    const setToday = () => {
+      emit('selectedDate', new Date())
+    }
+    const setTomorrow = () => {
+      const today = new Date()
+
+      emit('selectedDate', incrementDay(today))
+    }
+    const setNextWeek = () => {
+      const today = new Date()
+
+      emit('selectedDate', incrementDay(today, 8 - today.getDay()))
+    }
+
+    const weekNumber = computed(() => getWeekFromDate(selectedDate.value))
+    const day = computed(() =>
+      formatDate(selectedDate.value, {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
-      })
-    },
-    year() {
-      return formatDate(this.selectedDate, {
+      }),
+    )
+    const year = computed(() =>
+      formatDate(selectedDate.value, {
         year: 'numeric',
-      })
-    },
-  },
-  methods: {
-    setIsTodayDisabled(value) {
-      this.isTodayDisabled = value
-    },
-    setSelectedDate(date) {
-      this.$emit('selectedDate', date)
-    },
-    setToday() {
-      this.$emit('selectedDate', new Date())
-    },
-    setTomorrow() {
-      const today = new Date()
+      }),
+    )
 
-      this.$emit('selectedDate', incrementDay(today))
-    },
-    setNextWeek() {
-      const today = new Date()
-
-      this.$emit('selectedDate', incrementDay(today, 8 - today.getDay()))
-    },
+    return () => {
+      return (
+        <div>
+          <div
+            class={style.triangle}
+            style={{
+              borderColor: `transparent transparent ${colors.value.hex} transparent`,
+            }}
+          />
+          <Paper class={style.agenda}>
+            <div class={style.header} style={{ background: colors.value.hex }}>
+              <span class={style.year}>{year.value}</span>
+              <span class={style.date}>{day.value}</span>
+              <span>(week {weekNumber.value})</span>
+            </div>
+            <div class={style.days}>
+              <div class={style.shortcuts}>
+                <Button
+                  color={colors.value.hex}
+                  class={style.button}
+                  disabled={isTodayDisabled.value}
+                  onClick={setToday}
+                >
+                  Today
+                </Button>
+                <Button
+                  color={colors.value.hex}
+                  class={style.button}
+                  onClick={setTomorrow}
+                >
+                  Tomorrow
+                </Button>
+                <Button
+                  color={colors.value.hex}
+                  class={style.button}
+                  onClick={setNextWeek}
+                >
+                  Next Week
+                </Button>
+              </div>
+              <Calendar
+                colors={colors.value}
+                labels-by-day={taskedDays.value}
+                selected-date={selectedDate.value}
+                onIsTodayDisabled={(value) => setIsTodayDisabled(value)}
+                onSelectedDateUpdate={handleSelectedDateUpdate}
+                onPreviewDateUpdate={handlePreviewDateUpdate}
+              />
+            </div>
+          </Paper>
+        </div>
+      )
+    }
   },
 })
 </script>

@@ -1,9 +1,19 @@
-<template>
-  <div :class="$style.wrapper">
-    <div :class="$style.divider"></div>
-    <label v-if="$slots.default" :class="$style.label"><slot /></label>
-  </div>
-</template>
+<script>
+import { defineComponent, useCssModule } from 'vue'
+
+export default defineComponent({
+  setup(props, { slots }) {
+    const style = useCssModule()
+
+    return () => (
+      <div class={style.wrapper}>
+        <div class={style.divider}></div>
+        {slots.default && <label class={style.label}>{slots.default()}</label>}
+      </div>
+    )
+  },
+})
+</script>
 
 <style lang="scss" module>
 .wrapper {

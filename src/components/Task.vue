@@ -1,56 +1,10 @@
-<template>
-  <div
-    :class="[
-      $style.task,
-      {
-        [$style.editingText]: editingText,
-      },
-    ]"
-  >
-    <div v-if="editingText === null" :class="$style.view">
-      <input
-        :id="`toggle-${task.id}`"
-        type="checkbox"
-        :class="$style.toggle"
-        :checked="task.completed"
-        @click="$emit('setTaskCompleted', task.id)"
-      />
-      <label :class="$style.toggleIconsWrapper" :for="`toggle-${task.id}`">
-        <CompletedTaskIcon v-if="task.completed" :class="$style.icon" />
-        <RunningTaskIcon v-else :class="$style.icon" />
-      </label>
-      <div :class="$style.textWrapper" @dblclick="editingTaskName">
-        <span :class="$style.date">
-          {{ formattedTaskDate }}
-        </span>
-        <label :class="[$style.label, { [$style.completed]: task.completed }]">
-          {{ task.name }}
-        </label>
-      </div>
-      <span :class="$style.tag" :style="{ background: getTagColor }" />
-      <CrossIcon
-        :class="$style.destroy"
-        @click.prevent="$emit('deleteTask', task.id)"
-      />
-    </div>
-    <input
-      v-if="editingText !== null"
-      v-model="editingText"
-      v-focus
-      :class="$style.editingTextInput"
-      type="text"
-      @keyup.enter="handleEditTask"
-      @blur="editingText = null"
-    />
-  </div>
-</template>
-
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, computed, toRefs, useCssModule } from 'vue'
 
 import CompletedTaskIcon from '@assets/completedTask.svg'
 import CrossIcon from '@assets/cross.svg'
 import RunningTaskIcon from '@assets/runningTask.svg'
+import useState from '@core/hooks/useState'
 import { formatDate } from '@core/utils'
 
 export default defineComponent({
@@ -62,11 +16,6 @@ export default defineComponent({
 
       element.focus()
     },
-  },
-  components: {
-    RunningTaskIcon,
-    CompletedTaskIcon,
-    CrossIcon,
   },
   props: {
     taskDateFormat: {
@@ -82,38 +31,93 @@ export default defineComponent({
       required: true,
     },
   },
-  data() {
-    return {
-      editingText: null,
-    }
-  },
-  computed: {
-    formattedTaskDate() {
-      return formatDate(new Date(this.task.date), this.taskDateFormat)
-    },
-    getTagColor() {
-      const tags = this.tags.find(({ id }) => id === this.task.tagId)
+  setup(props, { emit }) {
+    const { taskDateFormat, task, tags } = toRefs(props)
+    const [editingText, setEditingText] = useState(null)
+    const style = useCssModule()
 
-      return tags && tags.color
-    },
-  },
-  methods: {
-    handleEditTask() {
-      if (!this.editingText) {
+    const formattedTaskDate = computed(() =>
+      formatDate(new Date(task.value.date), taskDateFormat.value),
+    )
+    const getTagColor = computed(() => {
+      const tag = tags.value.find(({ id }) => id === task.value.tagId)
+
+      return tag && tag.color
+    })
+
+    const handleEditTask = ({ keyCode }) => {
+      if (!editingText.value || keyCode !== 13) {
         return
       }
 
-      const task = {
-        ...this.task,
-        name: this.editingText,
+      const newTask = {
+        ...task.value,
+        name: editingText.value,
       }
 
-      this.$emit('editTask', task)
-      this.editingText = null
-    },
-    editingTaskName() {
-      this.editingText = this.task.name
-    },
+      emit('editTask', newTask)
+      setEditingText(null)
+    }
+
+    return () => (
+      <div
+        class={[
+          style.task,
+          {
+            [style.editingText]: editingText.value,
+          },
+        ]}
+      >
+        {editingText.value === null && (
+          <div class={style.view}>
+            <input
+              id={`toggle-${task.value.id}`}
+              type="checkbox"
+              class={style.toggle}
+              checked={task.value.completed}
+              onClick={() => emit('setTaskCompleted', task.value.id)}
+            />
+            <label
+              class={style.toggleIconsWrapper}
+              for={`toggle-${task.value.id}`}
+            >
+              {task.value.completed && <CompletedTaskIcon class={style.icon} />}
+              {!task.value.completed && <RunningTaskIcon class={style.icon} />}
+            </label>
+            <div
+              class={style.textWrapper}
+              onDblclick={() => setEditingText(task.value.name)}
+            >
+              <span class={style.date}>{formattedTaskDate.value}</span>
+              <label
+                class={[
+                  style.label,
+                  { [style.completed]: task.value.completed },
+                ]}
+              >
+                {task.value.name}
+              </label>
+            </div>
+            <span class={style.tag} style={{ background: getTagColor.value }} />
+            <CrossIcon
+              class={style.destroy}
+              onClick={() => emit('deleteTask', task.value.id)}
+            />
+          </div>
+        )}
+        {editingText.value !== null && (
+          <input
+            value={editingText.value}
+            onChange={({ target }) => setEditingText(target.value)}
+            v-focus
+            class={style.editingTextInput}
+            type="text"
+            onKeyup={handleEditTask}
+            onBlur={() => setEditingText(null)}
+          />
+        )}
+      </div>
+    )
   },
 })
 </script>
