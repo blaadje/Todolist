@@ -4,9 +4,9 @@ import { computed, defineComponent, toRefs, useCssModule } from 'vue'
 import DownArrowIcon from '@assets/downArrow.svg'
 import useState from '@core/hooks/useState'
 
-import Paper from './Paper'
-import Pellet from './Pellet'
-import TagList from './TagList'
+import Paper from '../Paper'
+import Pellet from '../Pellet'
+import TagList from '../TagList'
 
 export default defineComponent({
   props: {

@@ -3,10 +3,9 @@ import { defineComponent, toRefs, useCssModule } from 'vue'
 
 import useState from '@core/hooks/useState'
 
-import LeftArrowIcon from '../assets/leftArrow.svg'
-
-import Paper from './Paper'
-import TagList from './TagList'
+import LeftArrowIcon from '../../assets/leftArrow.svg'
+import Paper from '../Paper'
+import TagList from '../TagList'
 
 export default defineComponent({
   props: {

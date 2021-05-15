@@ -6,8 +6,8 @@ import { defineComponent, toRefs, useCssModule } from 'vue'
 import DownloadIcon from '@assets/download.svg'
 import useState from '@core/hooks/useState'
 
-import Button from './Button'
-import ProgressBar from './ProgressBar'
+import Button from '../Button'
+import ProgressBar from '../ProgressBar'
 
 export default defineComponent({
   props: {

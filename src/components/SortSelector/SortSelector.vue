@@ -5,7 +5,7 @@ import CheckIcon from '@assets/check.svg'
 import SortIcon from '@assets/sort.svg'
 import useState from '@core/hooks/useState'
 
-import Paper from './Paper'
+import Paper from '../Paper'
 
 export default defineComponent({
   props: {

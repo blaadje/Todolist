@@ -3,7 +3,7 @@ import { defineComponent, toRefs, useCssModule } from 'vue'
 
 import useState from '@core/hooks/useState'
 
-import TagSelector from './TagSelector'
+import TagSelector from '../TagSelector'
 
 export default defineComponent({
   props: {

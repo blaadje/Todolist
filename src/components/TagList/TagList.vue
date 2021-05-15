@@ -1,7 +1,7 @@
 <script>
 import { defineComponent, toRefs, useCssModule } from 'vue'
 
-import Pellet from './Pellet'
+import Pellet from '../Pellet'
 
 export default defineComponent({
   props: {
