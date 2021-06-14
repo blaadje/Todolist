@@ -3,7 +3,7 @@ module.exports = {
   ignorePatterns: ['dist'],
   extends: [
     'airbnb-base',
-    'plugin:vue/recommended',
+    'plugin:vue/vue3-recommended',
     'prettier',
     'prettier/vue',
     'plugin:import/errors',
@@ -54,10 +54,12 @@ module.exports = {
     'import/core-modules': ['dotenv', 'electron'],
     'import/resolver': {
       alias: {
+        // @TODO: remain on webpack aliases
         map: [
           ['@core', './src/core'],
           ['@components', './src/components'],
           ['@assets', './src/assets'],
+          ['@hoc', './src/hoc'],
         ],
         extensions: ['.js', '.vue'],
       },

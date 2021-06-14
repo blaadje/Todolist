@@ -12,6 +12,7 @@ module.exports = {
       '@assets': path.resolve(__dirname, '../src/assets/'),
       '@components': path.resolve(__dirname, '../src/components'),
       '@core': path.resolve(__dirname, '../src/core'),
+      '@hoc': path.resolve(__dirname, '../src/hoc'),
     },
   },
   plugins: [

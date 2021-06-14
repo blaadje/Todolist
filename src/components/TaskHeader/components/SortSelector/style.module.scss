@@ -1,0 +1,77 @@
+.wrapper {
+  position: relative;
+}
+
+.content {
+  position: absolute;
+  top: 100%;
+  right: 10px;
+
+  padding: 0;
+
+  white-space: nowrap;
+}
+
+.sortIcon {
+  width: 12px;
+  height: 12px;
+  margin-right: 0.6rem;
+
+  cursor: pointer;
+  fill: #757575;
+}
+
+.activeLabel {
+  margin-right: 0.6rem;
+
+  color: #757575;
+  white-space: nowrap;
+}
+
+.button {
+  display: flex;
+
+  align-items: center;
+
+  user-select: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.label {
+  margin-right: 0.4rem;
+
+  color: #c2c2c2;
+  white-space: nowrap;
+}
+
+.arrow {
+  border-width: 0 5px 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent #757575 transparent;
+
+  transform: rotate(180deg);
+}
+
+.contentItem {
+  display: flex;
+  padding: 1.2rem;
+
+  align-items: center;
+
+  color: #757575;
+  cursor: pointer;
+
+  &.isSelected {
+    background: #f5f7fc;
+    color: #b6c1d6;
+  }
+}
+
+.checkIcon {
+  width: 15px;
+  height: 15px;
+  margin-left: 0.8rem;
+
+  color: #2ec684;
+}

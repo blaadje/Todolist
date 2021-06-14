@@ -1,0 +1,111 @@
+.task {
+  position: relative;
+
+  padding-top: 1rem;
+  padding-right: 3rem;
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  margin: 0;
+
+  &:hover {
+    .destroy {
+      fill: #ededed;
+    }
+  }
+}
+
+.editingTextInput {
+  display: block;
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ededed;
+  border-radius: 0.2rem;
+
+  outline: none;
+  color: #757575;
+  font-weight: 100;
+  font-size: 1.2em;
+}
+
+.toggle {
+  display: none;
+
+  -webkit-appearance: none;
+}
+
+.toggleIconsWrapper {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+}
+
+.textWrapper {
+  display: flex;
+  width: 100%;
+  margin-left: 1.3rem;
+
+  flex-direction: column;
+}
+
+.date {
+  display: block;
+  margin: 0.8rem 0;
+
+  color: #c2c2c2;
+}
+
+.label {
+  position: relative;
+
+  display: inline;
+
+  color: #757575;
+  font-size: 1.2rem;
+  font-weight: 100;
+  line-height: 1.6rem;
+}
+
+.completed {
+  color: #e4e4e4;
+  text-decoration: line-through;
+}
+
+.tag {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 0.2rem;
+  margin: 0.3rem;
+
+  flex-shrink: 0;
+
+  cursor: pointer;
+}
+
+.destroy {
+  width: 25px;
+  height: 25px;
+  margin-left: 1rem;
+
+  fill: white;
+  background: transparent;
+  cursor: pointer;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+}
+
+.view {
+  display: flex;
+
+  align-items: center;
+}
+
+.editingText .view {
+  display: none;
+}

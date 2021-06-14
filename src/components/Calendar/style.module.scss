@@ -1,0 +1,70 @@
+.day {
+  position: relative;
+
+  display: flex;
+  border-radius: 50%;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.daysNameWrapper {
+  display: flex;
+
+  flex-wrap: wrap;
+}
+
+.buttonWrapper {
+  position: fixed;
+  top: 50%;
+  right: 50px;
+}
+
+.slider {
+  width: 100%;
+  height: 100%;
+}
+
+.sliderWrapper {
+  padding: 2rem;
+  padding-top: 1rem;
+}
+
+.daysNameBackground {
+  display: flex;
+  padding: 0.2rem 0;
+
+  justify-content: center;
+
+  background: #f5f7fc;
+  color: #b6c1d6;
+}
+
+.month {
+  display: block;
+  display: flex;
+  padding: 1rem 2.8rem;
+
+  align-items: center;
+}
+
+.rightArrowIcon,
+.leftArrowIcon {
+  width: 35px;
+  height: 35px;
+  padding: 0.7rem 0.5rem;
+  border-radius: 0.2rem;
+
+  cursor: pointer;
+
+  &:hover {
+    background: #f6f7fc;
+  }
+}
+
+.rightArrowIcon {
+  margin: 0.2rem;
+  margin-right: 1rem;
+
+  transform: rotate(180deg);
+}

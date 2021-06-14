@@ -1,0 +1,56 @@
+.dragIcon {
+  width: 12px;
+  height: 12px;
+  margin-left: 1.4rem;
+
+  cursor: grab;
+  fill: #ababab;
+}
+
+.listWrapper {
+  display: flex;
+  width: 100%;
+
+  flex-direction: column;
+  align-items: center;
+}
+
+.item {
+  position: relative;
+
+  display: flex;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+
+  align-items: center;
+
+  list-style-type: none;
+}
+
+.overlay {
+  position: relative;
+}
+
+.overlay::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  background-image: repeating-linear-gradient(
+    45deg,
+    #f4f5f7,
+    #f4f5f7 10px,
+    #f0f1f4 10px,
+    #f0f1f4 20px
+  );
+  content: '';
+}
+
+.drag {
+  border-radius: 0.4rem;
+
+  background: white;
+}

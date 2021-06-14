@@ -1,5 +1,11 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
 
+const {
+  default: installExtension,
+  VUEJS3_DEVTOOLS,
+} = require('electron-devtools-installer')
 const { autoUpdater } = require('electron-updater')
 
 let mainWindow
@@ -74,3 +80,11 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+// if (process.env.NODE_ENV === 'development') {
+//   app.whenReady().then(() => {
+//     installExtension(VUEJS3_DEVTOOLS)
+//       .then((name) => console.log(`Added Extension:  ${name}`))
+//       .catch((err) => console.log('An error occurred: ', err))
+//   })
+// }

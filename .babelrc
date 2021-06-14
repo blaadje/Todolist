@@ -1,4 +1,4 @@
 {
   "presets": ["@babel/preset-env"],
-  "plugins": ["@babel/plugin-transform-runtime", "@vue/babel-plugin-jsx"]
+  "plugins": ["@babel/plugin-transform-runtime", "@vue/babel-plugin-jsx", "@babel/plugin-proposal-class-properties"]
 }
